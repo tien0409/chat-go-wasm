@@ -1,12 +1,7 @@
-import SignInScreen from './screens/SignIn'
-import WasmProvider from './provioders/WasmProvider'
+import HomeScreen from './screens/Home'
 
 const App = () => {
-  return (
-    <WasmProvider>
-      <SignInScreen />
-    </WasmProvider>
-  )
+  return <HomeScreen />
 }
 
 export default App
