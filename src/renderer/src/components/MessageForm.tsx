@@ -12,13 +12,16 @@ const MessageForm = () => {
   return (
     <form className="flex relative h-full px-4" onSubmit={handleSubmit}>
       <Input
-        className="h-full w-full"
+        wrapperClass="h-full w-full"
+        inputClass="pr-12"
         placeholder="Enter message..."
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
       />
-      <button className="absolute -translate-y-1/2 top-1/2 right-6" type="submit">
-        <SendHorizonal />
+      <SendHorizonal className="absolute -translate-y-1/2 top-1/2 right-6" />
+
+      <button type="submit" hidden>
+        submit
       </button>
     </form>
   )

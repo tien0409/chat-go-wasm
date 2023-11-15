@@ -42,7 +42,7 @@ const MessageSearch = () => {
       <div className={clsx('flex gap-x-4 items-center', typeCall && 'w-full')}>
         <form onSubmit={handleSearch} className={clsx(typeCall && 'w-full')}>
           <Input
-            className="h-full"
+            wrapperClass="h-full"
             inputSize={'sm'}
             placeholder="Search..."
             value={searchValue}

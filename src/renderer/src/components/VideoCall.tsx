@@ -23,7 +23,7 @@ const VideoCall = () => {
         />
       )}
 
-      <div className="absolute z-10 bottom-10 left-1/2 flex gap-x-5">
+      <div className="absolute z-10 bottom-10 left-1/2 flex gap-x-8 -translate-x-1/2">
         <span className="cursor-pointer" onClick={() => setEnableAudio(!enableAudio)}>
           {enableAudio ? <Mic size={30} /> : <MicOff size={30} />}
         </span>

@@ -12,9 +12,9 @@ const ConversationSearch = () => {
   return (
     <div className="flex gap-x-4 p-4 items-center">
       <Menu className="cursor-pointer" />
-      <form onSubmit={handleSearch}>
+      <form className="flex-1" onSubmit={handleSearch}>
         <Input
-          className="h-full"
+          wrapperClass="h-full w-full"
           inputSize={'sm'}
           placeholder="Search..."
           value={searchValue}
