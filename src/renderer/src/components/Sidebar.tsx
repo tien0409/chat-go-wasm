@@ -1,8 +1,11 @@
 import UserList from './UserList'
+import ConversationSearch from './ConversationSearch'
 
 const Sidebar = () => {
   return (
-    <div>
+    <div className="overflow-hidden h-full">
+      <ConversationSearch />
+
       <UserList />
     </div>
   )
