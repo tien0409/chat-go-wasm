@@ -3,12 +3,13 @@ import Sidebar from '../components/Sidebar'
 import Chat from '../components/Chat'
 import useCallStore from '../stores/useCallStore'
 import VideoCall from '../components/VideoCall'
+import MenuAction from '../components/MenuAction'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex h-screen w-screen relative">
       <div
         className={clsx(
           'bg-yellow-50 w-0 duration-700 relative overflow-hidden',
