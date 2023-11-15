@@ -1,4 +1,4 @@
-import UserList from './UserList'
+import ConversationList from './ConversationList'
 import ConversationSearch from './ConversationSearch'
 
 const Sidebar = () => {
@@ -6,7 +6,7 @@ const Sidebar = () => {
     <div className="overflow-hidden h-full">
       <ConversationSearch />
 
-      <UserList />
+      <ConversationList />
     </div>
   )
 }

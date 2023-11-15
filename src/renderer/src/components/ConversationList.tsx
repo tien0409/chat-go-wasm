@@ -1,15 +1,15 @@
-import UserItem from './UserItem'
+import ConversationItem from './ConversationItem'
 
-const UserList = () => {
+const ConversationList = () => {
   return (
     <div className="w-full h-full overflow-y-auto">
       {Array(25)
         .fill(0)
         .map((_x, index) => (
-          <UserItem key={index} />
+          <ConversationItem key={index} />
         ))}
     </div>
   )
 }
 
-export default UserList
+export default ConversationList

@@ -33,7 +33,7 @@ const VideoCall = () => {
         <Phone className="cursor-pointer" size={30} onClick={() => turnOffCall()} />
       </div>
 
-      <div className="absolute bottom-4 right-4 w-72 rounded h-44 bg-red-500 flex items-center justify-center">
+      <div className="absolute bottom-4 right-4 w-72 rounded h-44 bg-gray-800 flex items-center justify-center">
         {localStream ? (
           <video ref={localVideoRef} />
         ) : (

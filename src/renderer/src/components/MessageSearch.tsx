@@ -30,7 +30,7 @@ const MessageSearch = () => {
     >
       <div className="flex gap-x-3 items-center">
         <img
-          src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fstock.adobe.com%2Fsearch%3Fk%3Dcat&psig=AOvVaw1P10X_S6zG0RR70Hrkx6Ne&ust=1700143950368000&source=images&cd=vfe&ved=0CBIQjRxqFwoTCNiMuPOXxoIDFQAAAAAdAAAAABAE"
+          src="https://source.unsplash.com/RZrIJ8C0860"
           alt="image"
           className="w-10 h-10 rounded-full"
         />
