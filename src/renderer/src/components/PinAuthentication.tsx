@@ -1,12 +1,16 @@
 import PinInput from 'react-pin-input'
-import { FormEvent, ReactNode, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
+import { useNavigate } from 'react-router-dom'
+import { SIGN_IN_PAGE } from '../configs/routes'
 
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
-  const { isAuth, setIsAuth } = useAuthStore()
+  const navigate = useNavigate()
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_pinValue, setPinValue] = useState('')
+  const { signingIn, isAuth, setIsAuth } = useAuthStore()
+
+  const [pinValue, setPinValue] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleComplete = (value: string) => {
     setPinValue(value)
@@ -14,8 +18,21 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsAuth(true)
+    if (pinValue === '1234') setIsAuth(true)
+    else setErrorMessage('Mã pin không đúng')
   }
+
+  useEffect(() => {
+    const readAuthFile = async () => {
+      const data = await window.api.readAuthFile()
+      if (data !== 'Auth' && !signingIn) {
+        setErrorMessage('')
+        navigate(SIGN_IN_PAGE)
+      }
+    }
+
+    readAuthFile().then()
+  }, [signingIn])
 
   return (
     <>
@@ -38,6 +55,8 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
             }}
             onComplete={handleComplete}
           />
+
+          <p className="text-red-500 mt-3">{errorMessage}</p>
 
           <button className="mt-8 bg-prim-100 text-white py-2 px-6 rounded" type="submit">
             Xác nhận

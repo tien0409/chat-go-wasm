@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { ipcMain, app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import * as fs from 'fs'
 
 function createWindow(): void {
   // Create the browser window.
@@ -12,9 +13,11 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
+      contextIsolation: true,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      enableBlinkFeatures: 'OverlayScrollbars'
+      enableBlinkFeatures: 'OverlayScrollbars',
+      nodeIntegration: true
     }
   })
   mainWindow.webContents.openDevTools({
@@ -46,6 +49,8 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
+  ipcMain.handle('r_readAuthFile', handleReadAuthFile)
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -73,3 +78,18 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+function handleReadAuthFile() {
+  try {
+    if (fs.existsSync('auth.txt')) {
+      return fs.readFileSync('auth.txt', 'utf8')
+    } else {
+      fs.writeFileSync('auth.txt', 'Auth')
+    }
+    return 'Hello world'
+  } catch (error) {
+    alert(error)
+  }
+
+  return ''
+}

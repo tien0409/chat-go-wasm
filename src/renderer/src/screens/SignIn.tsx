@@ -1,5 +1,5 @@
 import Input from '../components/Input'
-import { FormEvent } from 'react'
+import { FormEvent, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
 import { useNavigate } from 'react-router-dom'
 import { HOME_PAGE, SIGN_UP_PAGE } from '../configs/routes'
@@ -7,12 +7,19 @@ import { HOME_PAGE, SIGN_UP_PAGE } from '../configs/routes'
 const SignInScreen = () => {
   const navigate = useNavigate()
 
-  const { setIsAuth } = useAuthStore()
+  const { setSigningIn } = useAuthStore()
+
+  const [formValue, setFormValue] = useState<{ username: string; password: string }>({
+    username: '',
+    password: ''
+  })
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsAuth(true)
-    navigate(HOME_PAGE)
+    if (formValue.username === 'root' && formValue.password === 'root') {
+      setSigningIn(true)
+      navigate(HOME_PAGE)
+    }
   }
 
   return (
@@ -33,8 +40,16 @@ const SignInScreen = () => {
         <span className="text-gray-500">để trải nghiệm những nội dung thú vị</span>
       </p>
       <form onSubmit={handleSubmit}>
-        <Input placeholder="Username" />
-        <Input placeholder="Password" />
+        <Input
+          value={formValue.username}
+          placeholder="Username"
+          onChange={(e) => setFormValue({ ...formValue, username: e.target.value })}
+        />
+        <Input
+          value={formValue.password}
+          placeholder="Password"
+          onChange={(e) => setFormValue({ ...formValue, password: e.target.value })}
+        />
         <button
           className="bg-prim-100 text-white font-semibold w-full rounded py-3 mt-2 hover:bg-prim-100/90 duration-200"
           type="submit"
