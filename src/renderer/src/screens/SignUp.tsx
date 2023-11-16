@@ -21,12 +21,12 @@ const SignUpScreen = () => {
       return
     }
     try {
-      const res = await authRepository.register({
+      await authRepository.register({
         username: formValue.username,
         password: formValue.password
       })
-      console.log('res', res)
-      // navigate(SIGN_IN_PAGE)
+      toast.success('Đăng ký thành công')
+      navigate(SIGN_IN_PAGE)
     } catch (error) {
       toast.error('Đăng ký thất bại')
       console.error('ERROR: ', error)
@@ -57,11 +57,13 @@ const SignUpScreen = () => {
           onChange={(e) => setFormValue({ ...formValue, username: e.target.value })}
         />
         <Input
+          type="password"
           placeholder="Password"
           value={formValue.password}
           onChange={(e) => setFormValue({ ...formValue, password: e.target.value })}
         />
         <Input
+          type="password"
           placeholder="Confirm password"
           value={formValue.confirmPassword}
           onChange={(e) => setFormValue({ ...formValue, confirmPassword: e.target.value })}
