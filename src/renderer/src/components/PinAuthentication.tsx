@@ -5,7 +5,8 @@ import useAuthStore from '../stores/useAuthStore'
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const { isAuth, setIsAuth } = useAuthStore()
 
-  const [pinValue, setPinValue] = useState('')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_pinValue, setPinValue] = useState('')
 
   const handleComplete = (value: string) => {
     setPinValue(value)
@@ -30,6 +31,7 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
           <PinInput
             length={4}
             initialValue=""
+            focus
             inputStyle={{
               borderRadius: 4,
               margin: '0 10px'

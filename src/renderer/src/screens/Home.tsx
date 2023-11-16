@@ -3,9 +3,11 @@ import Sidebar from '../components/Sidebar'
 import Chat from '../components/Chat'
 import useCallStore from '../stores/useCallStore'
 import VideoCall from '../components/VideoCall'
+import useConversationStore from '../stores/useConversationStore'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
+  const { currentConversation } = useConversationStore()
 
   return (
     <div className="flex h-screen w-screen relative">
@@ -28,7 +30,16 @@ const HomeScreen = () => {
           typeCall ? 'w-1/4' : 'w-3/4'
         )}
       >
-        <Chat />
+        {currentConversation ? (
+          <Chat />
+        ) : (
+          <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 text-center">
+            <h1 className="text-2xl font-bold">Welcome to Chat App</h1>
+            <p className="text-gray-500 mt-2">
+              Select a conversation from the sidebar or start a new one.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
