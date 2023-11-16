@@ -3,6 +3,7 @@ import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
 import { toast } from 'react-toastify'
+import authRepository from '../repositories/auth-repository'
 
 const SignUpScreen = () => {
   const navigate = useNavigate()
@@ -13,14 +14,23 @@ const SignUpScreen = () => {
     confirmPassword: ''
   })
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (formValue.password !== formValue.confirmPassword) {
       toast.error('Mật khẩu không khớp')
       return
     }
-
-    navigate(SIGN_IN_PAGE)
+    try {
+      const res = await authRepository.register({
+        username: formValue.username,
+        password: formValue.password
+      })
+      console.log('res', res)
+      // navigate(SIGN_IN_PAGE)
+    } catch (error) {
+      toast.error('Đăng ký thất bại')
+      console.error('ERROR: ', error)
+    }
   }
 
   return (
