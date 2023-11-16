@@ -1,13 +1,25 @@
 import Input from '../components/Input'
-import { FormEvent } from 'react'
+import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
+import { toast } from 'react-toastify'
 
 const SignUpScreen = () => {
   const navigate = useNavigate()
 
+  const [formValue, setFormValue] = useState({
+    username: '',
+    password: '',
+    confirmPassword: ''
+  })
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (formValue.password !== formValue.confirmPassword) {
+      toast.error('Mật khẩu không khớp')
+      return
+    }
+
     navigate(SIGN_IN_PAGE)
   }
 
@@ -29,9 +41,21 @@ const SignUpScreen = () => {
         <span className="text-gray-500">tài khoản ngay hôm nay</span>
       </p>
       <form onSubmit={handleSubmit}>
-        <Input placeholder="Username" />
-        <Input placeholder="Password" />
-        <Input placeholder="Confirm password" />
+        <Input
+          placeholder="Username"
+          value={formValue.username}
+          onChange={(e) => setFormValue({ ...formValue, username: e.target.value })}
+        />
+        <Input
+          placeholder="Password"
+          value={formValue.password}
+          onChange={(e) => setFormValue({ ...formValue, password: e.target.value })}
+        />
+        <Input
+          placeholder="Confirm password"
+          value={formValue.confirmPassword}
+          onChange={(e) => setFormValue({ ...formValue, confirmPassword: e.target.value })}
+        />
         <button
           className="bg-prim-100 text-white font-semibold w-full rounded py-3 mt-2 hover:bg-prim-100/90 duration-200"
           type="submit"

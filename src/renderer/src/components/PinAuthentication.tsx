@@ -7,26 +7,27 @@ import { SIGN_IN_PAGE } from '../configs/routes'
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
 
-  const { signingIn, isAuth, setIsAuth } = useAuthStore()
+  const { signingIn, isAuth } = useAuthStore()
 
   const [pinValue, setPinValue] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
 
   const handleComplete = (value: string) => {
     setPinValue(value)
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (pinValue === '1234') setIsAuth(true)
-    else setErrorMessage('Mã pin không đúng')
+
+    await window.startUp(pinValue)
+    const keyBundle = await window.generateInternalKeyBundle()
+    const keyJSON = await window.saveInternalKey(keyBundle)
+    await window.api.writeAuthFile(keyJSON)
   }
 
   useEffect(() => {
     const readAuthFile = async () => {
       const data = await window.api.readAuthFile()
       if (data !== 'Auth' && !signingIn) {
-        setErrorMessage('')
         navigate(SIGN_IN_PAGE)
       }
     }
@@ -55,8 +56,6 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
             }}
             onComplete={handleComplete}
           />
-
-          <p className="text-red-500 mt-3">{errorMessage}</p>
 
           <button className="mt-8 bg-prim-100 text-white py-2 px-6 rounded" type="submit">
             Xác nhận

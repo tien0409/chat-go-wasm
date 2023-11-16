@@ -50,6 +50,7 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
   ipcMain.handle('r_readAuthFile', handleReadAuthFile)
+  ipcMain.handle('r_writeAuthFile', handleWriteAuthFile)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -86,10 +87,17 @@ function handleReadAuthFile() {
     } else {
       fs.writeFileSync('auth.txt', 'Auth')
     }
-    return 'Hello world'
   } catch (error) {
-    alert(error)
+    console.error('ERROR', error)
   }
 
   return ''
+}
+
+function handleWriteAuthFile(e: Electron.IpcMainInvokeEvent, content: string) {
+  try {
+    fs.writeFileSync('auth.txt', JSON.stringify(content), 'utf8')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
 }
