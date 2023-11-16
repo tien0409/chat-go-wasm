@@ -2,7 +2,7 @@ import MessageList from './MessageList'
 import MessageForm from './MessageForm'
 import MessageSearch from './MessageSearch'
 import useConversationStore from '../stores/useConversationStore'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import IMessage from '../interfaces/IMessage'
 
 const Chat = () => {

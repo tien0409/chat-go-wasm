@@ -1,6 +1,13 @@
+import clsx from 'clsx'
+
 const ConversationItem = () => {
   return (
-    <div className="border-b cursor-pointer flex gap-x-3 justify-between w-full p-3 items-center">
+    <div
+      className={clsx(
+        'border-b cursor-pointer flex gap-x-3 justify-between w-full p-3 items-center',
+        Math.random() > 0.5 && 'bg-yellow-50/80'
+      )}
+    >
       <div className="flex gap-2 items-center flex-1 ">
         <img
           src="https://source.unsplash.com/RZrIJ8C0860"

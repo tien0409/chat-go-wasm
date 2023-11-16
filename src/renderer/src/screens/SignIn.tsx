@@ -1,10 +1,18 @@
 import Input from '../components/Input'
 import { FormEvent } from 'react'
+import useAuthStore from '../stores/useAuthStore'
+import { useNavigate } from 'react-router-dom'
+import { HOME_PAGE } from '../configs/routes'
 
 const SignInScreen = () => {
+  const navigate = useNavigate()
+
+  const { setIsAuth } = useAuthStore()
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log('submit')
+    setIsAuth(true)
+    navigate(HOME_PAGE)
   }
 
   return (
