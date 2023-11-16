@@ -30,7 +30,10 @@ const MessageList = (props: MessageListProps) => {
   }, [])
 
   return (
-    <div className="h-full overflow-y-auto px-4 flex flex-col gap-4" onScroll={handleScroll}>
+    <div
+      className="h-full overflow-y-auto custom__scroll px-4 flex flex-col gap-4"
+      onScroll={handleScroll}
+    >
       {messages.map((message, index) => (
         <MessageItem message={message} key={index} />
       ))}

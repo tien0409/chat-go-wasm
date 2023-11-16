@@ -3,7 +3,6 @@ import Sidebar from '../components/Sidebar'
 import Chat from '../components/Chat'
 import useCallStore from '../stores/useCallStore'
 import VideoCall from '../components/VideoCall'
-import MenuAction from '../components/MenuAction'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()

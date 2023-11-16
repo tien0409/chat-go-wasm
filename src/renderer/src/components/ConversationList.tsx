@@ -2,7 +2,7 @@ import ConversationItem from './ConversationItem'
 
 const ConversationList = () => {
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto custom__scroll">
       {Array(25)
         .fill(0)
         .map((_x, index) => (
