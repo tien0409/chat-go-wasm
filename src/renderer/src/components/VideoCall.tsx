@@ -1,12 +1,14 @@
-import { useRef } from 'react'
-import { Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
 import useCallStore from '../stores/useCallStore'
+import clsx from 'clsx'
 
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const [isHiddenLocalStream, setIsHiddenLocalStream] = useState(false)
 
   const localStream = false
   const remoteStream = false
@@ -19,7 +21,7 @@ const VideoCall = () => {
         <img
           alt="avatar"
           src="https://t4.ftcdn.net/jpg/02/66/72/41/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg"
-          className="w-36 h-36 bg-blue-500 rounded-full"
+          className="w-36 h-36 bg-blue-500 rounded-full object-cover"
         />
       )}
 
@@ -33,16 +35,33 @@ const VideoCall = () => {
         <Phone className="cursor-pointer" size={30} onClick={() => turnOffCall()} />
       </div>
 
-      <div className="absolute bottom-4 right-4 w-72 rounded h-44 bg-gray-800 flex items-center justify-center">
+      <ChevronLeft
+        size={36}
+        className={clsx(
+          'absolute bottom-16 cursor-pointer opacity-0 duration-1000 right-4',
+          isHiddenLocalStream ? 'opacity-100' : 'invisible'
+        )}
+        onClick={() => setIsHiddenLocalStream(false)}
+      />
+
+      <div
+        className={clsx(
+          'group absolute duration-300 bottom-4 w-72 rounded h-44 bg-gray-800 flex items-center justify-center',
+          isHiddenLocalStream ? 'translate-x-full right-0' : 'translate-x-0 right-4'
+        )}
+      >
         {localStream ? (
           <video ref={localVideoRef} />
         ) : (
           <img
             alt="avatar"
             src="https://t4.ftcdn.net/jpg/02/66/72/41/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg"
-            className="w-16 h-16 rounded-full"
+            className="w-20 h-20 rounded-full object-cover"
           />
         )}
+        <div className="group-hover:opacity-100 absolute right-0 px-2 inset-y-0 flex items-center bg-transparent hover:bg-black/10 duration-300 opacity-0 cursor-pointer">
+          <ChevronRight className="text-white" onClick={() => setIsHiddenLocalStream(true)} />
+        </div>
       </div>
     </div>
   )
