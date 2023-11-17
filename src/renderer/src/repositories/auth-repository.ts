@@ -4,7 +4,7 @@ import ILoginResponse from '../interfaces/ILoginResponse'
 import IResponse from '../interfaces/IResponse'
 
 const authRepository = {
-  getUserInfo: (accessToken: string) =>
+  getUserInfo: (accessToken: string): Promise<IResponse<I>> =>
     axiosInstance.get('/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`
