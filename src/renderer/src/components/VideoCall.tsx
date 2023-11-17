@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
-import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
+import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import useCallStore from '../stores/useCallStore'
 
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
@@ -10,13 +10,65 @@ const VideoCall = () => {
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const [isHiddenLocalStream, setIsHiddenLocalStream] = useState(false)
 
-  const localStream = false
-  const remoteStream = false
+  const localStream = true
+  const remoteStream = true
+
+  const handleVideo = () => {
+    const All_mediaDevices = navigator.mediaDevices
+    if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
+      console.log('getUserMedia() not supported.')
+      return
+    }
+    All_mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    })
+      .then(function (vidStream) {
+        /* const recorder = new MediaRecorder(vidStream);
+        recorder.ondataavailable = event => {
+          // get the Blob from the event
+          const blob = event.data;
+          blob.stream().getReader().read().then(
+            value => {
+              var binary = '';
+              var u8 = value.value;
+              var len = u8.byteLength;
+              for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(u8[i]);
+              }
+              console.log(window.btoa(binary))
+            }
+          )
+
+          // and send that blob to the server...
+        };
+        recorder.start(1000) */
+
+        const video = localVideoRef.current
+        if (video != null) {
+          if ('srcObject' in video) {
+            video.srcObject = vidStream
+          } else {
+            video.src = window.URL.createObjectURL(vidStream)
+          }
+          video.onloadedmetadata = function (e) {
+            video.play()
+          }
+        }
+      })
+      .catch(function (e) {
+        console.log(e.name + ': ' + e.message)
+      })
+  }
+
+  useEffect(() => {
+    handleVideo()
+  }, [])
 
   return (
-    <div className="flex items-center justify-center h-full">
+    <div className="flex items-center justify-center h-full w-full">
       {remoteStream ? (
-        <video ref={remoteVideoRef} />
+        <video ref={localVideoRef} className="block items-center justify-center h-full w-full" />
       ) : (
         <img
           alt="avatar"
@@ -51,7 +103,7 @@ const VideoCall = () => {
         )}
       >
         {localStream ? (
-          <video ref={localVideoRef} />
+          <video ref={localVideoRef} className="absolute rounded h-44 w-72" />
         ) : (
           <img
             alt="avatar"

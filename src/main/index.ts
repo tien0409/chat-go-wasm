@@ -17,7 +17,8 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       enableBlinkFeatures: 'OverlayScrollbars',
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: false
     }
   })
   mainWindow.webContents.openDevTools({
