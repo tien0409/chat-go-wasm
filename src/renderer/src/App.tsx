@@ -7,26 +7,29 @@ import PinAuthentication from './components/PinAuthentication'
 import WasmProvider from './providers/WasmProvider'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import SocketProvider from './providers/SocketProvider'
 
 const App = () => {
   return (
-    <WasmProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path={HOME_PAGE}
-            element={
-              <PinAuthentication>
-                <HomeScreen />
-              </PinAuthentication>
-            }
-          />
-          <Route path={SIGN_IN_PAGE} element={<SignInScreen />} />
-          <Route path={SIGN_UP_PAGE} element={<SignUpScreen />} />
-        </Routes>
-      </BrowserRouter>
-      <ToastContainer />
-    </WasmProvider>
+    <SocketProvider>
+      <WasmProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path={HOME_PAGE}
+              element={
+                <PinAuthentication>
+                  <HomeScreen />
+                </PinAuthentication>
+              }
+            />
+            <Route path={SIGN_IN_PAGE} element={<SignInScreen />} />
+            <Route path={SIGN_UP_PAGE} element={<SignUpScreen />} />
+          </Routes>
+        </BrowserRouter>
+        <ToastContainer />
+      </WasmProvider>
+    </SocketProvider>
   )
 }
 
