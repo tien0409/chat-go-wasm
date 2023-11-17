@@ -1,24 +1,28 @@
 import Input from '../components/Input'
 import { FormEvent, useState } from 'react'
-import useAuthStore from '../stores/useAuthStore'
 import { useNavigate } from 'react-router-dom'
-import { HOME_PAGE, SIGN_UP_PAGE } from '../configs/routes'
+import { SIGN_UP_PAGE } from '../configs/routes'
+import { toast } from 'react-toastify'
+import authRepository from '../repositories/auth-repository'
 
 const SignInScreen = () => {
   const navigate = useNavigate()
-
-  const { setSigningIn } = useAuthStore()
 
   const [formValue, setFormValue] = useState<{ username: string; password: string }>({
     username: '',
     password: ''
   })
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (formValue.username === 'root' && formValue.password === 'root') {
-      setSigningIn(true)
-      navigate(HOME_PAGE)
+    try {
+      const res = await authRepository.login(formValue)
+      console.log('res', res)
+      const userInfoRes = await authRepository.getUserInfo(res.data.accessToken)
+      console.log('userInfoRes', userInfoRes)
+    } catch (error) {
+      toast.error('Đăng nhập thất bại')
+      console.error('ERROR', error)
     }
   }
 
@@ -46,6 +50,7 @@ const SignInScreen = () => {
           onChange={(e) => setFormValue({ ...formValue, username: e.target.value })}
         />
         <Input
+          type="password"
           value={formValue.password}
           placeholder="Password"
           onChange={(e) => setFormValue({ ...formValue, password: e.target.value })}
