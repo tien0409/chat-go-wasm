@@ -1,12 +1,17 @@
 import Input from '../components/Input'
 import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SIGN_UP_PAGE } from '../configs/routes'
+import { HOME_PAGE, SIGN_UP_PAGE } from '../configs/routes'
 import { toast } from 'react-toastify'
 import authRepository from '../repositories/auth-repository'
+import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import useAuthStore from '../stores/useAuthStore'
+import axiosInstance from '../libs/axios'
 
 const SignInScreen = () => {
   const navigate = useNavigate()
+
+  const { setUserInfo, setAuthToken } = useAuthStore()
 
   const [formValue, setFormValue] = useState<{ username: string; password: string }>({
     username: '',
@@ -17,9 +22,18 @@ const SignInScreen = () => {
     e.preventDefault()
     try {
       const res = await authRepository.login(formValue)
-      console.log('res', res)
-      const userInfoRes = await authRepository.getUserInfo(res.data.accessToken)
-      console.log('userInfoRes', userInfoRes)
+      localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken)
+      axiosInstance.defaults.headers['Authorization'] = `Bearer ${res.data.accessToken}`
+
+      const [userInfoRes, authToken] = await Promise.all([
+        authRepository.getUserInfo(),
+        authRepository.getAuthToken()
+      ])
+      setAuthToken(authToken.data.authToken)
+      setUserInfo(userInfoRes.data)
+      toast.success('Đăng nhập thành công')
+      navigate(HOME_PAGE)
+      localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken)
     } catch (error) {
       toast.error('Đăng nhập thất bại')
       console.error('ERROR', error)

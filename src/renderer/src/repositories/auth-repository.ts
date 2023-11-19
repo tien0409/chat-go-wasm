@@ -4,15 +4,11 @@ import ILoginResponse from '../interfaces/ILoginResponse'
 import IResponse from '../interfaces/IResponse'
 
 const authRepository = {
-  getUserInfo: (accessToken: string): Promise<IResponse<I>> =>
-    axiosInstance.get('/user', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }),
+  getUserInfo: () => axiosInstance.get('/user'),
   login: (data: IAuthData): Promise<IResponse<ILoginResponse>> =>
     axiosInstance.post('/auth/login', { ...data, loginType: 'password' }),
-  register: (data: IAuthData) => axiosInstance.post('/auth/register', data)
+  register: (data: IAuthData) => axiosInstance.post('/auth/register', data),
+  getAuthToken: (): Promise<IResponse<{ authToken: string }>> => axiosInstance.get('/ws/init')
 }
 
 export default authRepository

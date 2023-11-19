@@ -1,13 +1,15 @@
 import { ReactNode, useEffect } from 'react'
-import useSocketStore from '../stores/useSocketStore'
+import useWebSocketStore from '../stores/useWebSocketStore'
+import useAuthStore from '../stores/useAuthStore'
 
 const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const { socket, initSocket } = useSocketStore()
+  const { userInfo, authToken } = useAuthStore()
+  const { websocket, initWebSocket } = useWebSocketStore()
 
   useEffect(() => {
-    if (socket) return
-    else initSocket()
-  }, [socket, initSocket])
+    if (websocket || !authToken) return
+    else initWebSocket()
+  }, [websocket, initWebSocket, userInfo, authToken])
 
   return children
 }

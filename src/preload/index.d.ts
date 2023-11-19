@@ -11,6 +11,7 @@ declare global {
     api: {
       readAuthFile(): Promise<string>
       writeAuthFile(content: string): Promise<void>
+      checkAuthFile(content: string): Promise<boolean>
     }
   }
 }

@@ -6,6 +6,8 @@ interface IAuthStore {
     username: string
     aliasName: string
   } | null
+  authToken: string
+  setAuthToken: (authToken: string) => void
   setUserInfo: (userInfo: { id: string; username: string; aliasName: string } | null) => void
   signingIn: boolean
   setSigningIn: (signingIn: boolean) => void
@@ -14,6 +16,8 @@ interface IAuthStore {
 }
 
 const useAuthStore = create<IAuthStore>((set) => ({
+  authToken: '',
+  setAuthToken: (authToken: string) => set({ authToken }),
   userInfo: null,
   setUserInfo: (userInfo: { username: string; id: string; aliasName: string } | null) =>
     set({ userInfo }),

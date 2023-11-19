@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
+import { ACCESS_TOKEN_KEY } from '../configs/consts'
 
 type MenuActionProps = {
   isMenuOpen: boolean
@@ -14,6 +15,7 @@ const MenuAction = (props: MenuActionProps) => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
     navigate(SIGN_IN_PAGE)
   }
 

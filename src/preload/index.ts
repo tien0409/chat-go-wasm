@@ -4,7 +4,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   readAuthFile: () => ipcRenderer.invoke('r_readAuthFile'),
-  writeAuthFile: (content: string) => ipcRenderer.invoke('r_writeAuthFile', content)
+  writeAuthFile: (content: string) => ipcRenderer.invoke('r_writeAuthFile', content),
+  checkAuthFile: (content: string) => ipcRenderer.invoke('r_checkAuthFile', content)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
