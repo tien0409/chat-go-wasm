@@ -7,6 +7,7 @@ import PinAuthentication from './components/PinAuthentication'
 import WasmProvider from './providers/WasmProvider'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import VideoCall from './components/VideoCall'
 
 const App = () => {
   return (
@@ -21,7 +22,7 @@ const App = () => {
               </PinAuthentication>
             }
           />
-          <Route path={SIGN_IN_PAGE} element={<SignInScreen />} />
+          <Route path={SIGN_IN_PAGE} element={<VideoCall />} />
           <Route path={SIGN_UP_PAGE} element={<SignUpScreen />} />
         </Routes>
       </BrowserRouter>

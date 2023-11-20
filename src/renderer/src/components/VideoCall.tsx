@@ -6,6 +6,17 @@ import useCallStore from '../stores/useCallStore'
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
+  const voipToken = 'jkJmTUSWkRz5Dh4HzqZAvUL3SBNHaBDcghw7Oup3tws'
+  const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
+
+  const senderWs = new WebSocket(
+    requestTemplate.replace('{{voipToken}}', voipToken).replace('{{connType}}', 'FROM_CALLER')
+  )
+
+  const recieverWs = new WebSocket(
+    requestTemplate.replace('{{voipToken}}', voipToken).replace('{{connType}}', 'FROM_RECIEVER')
+  )
+
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const [isHiddenLocalStream, setIsHiddenLocalStream] = useState(false)
@@ -13,62 +24,100 @@ const VideoCall = () => {
   const localStream = true
   const remoteStream = true
 
-  const handleVideo = () => {
-    const All_mediaDevices = navigator.mediaDevices
-    if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
-      console.log('getUserMedia() not supported.')
-      return
-    }
-    All_mediaDevices.getUserMedia({
-      audio: true,
-      video: true
-    })
-      .then(function (vidStream) {
-        /* const recorder = new MediaRecorder(vidStream);
-        recorder.ondataavailable = event => {
-          // get the Blob from the event
-          const blob = event.data;
-          blob.stream().getReader().read().then(
-            value => {
-              var binary = '';
-              var u8 = value.value;
-              var len = u8.byteLength;
-              for (var i = 0; i < len; i++) {
-                binary += String.fromCharCode(u8[i]);
-              }
-              console.log(window.btoa(binary))
-            }
-          )
-
-          // and send that blob to the server...
-        };
-        recorder.start(1000) */
-
-        const video = localVideoRef.current
-        if (video != null) {
-          if ('srcObject' in video) {
-            video.srcObject = vidStream
-          } else {
-            video.src = window.URL.createObjectURL(vidStream)
-          }
-          video.onloadedmetadata = function (e) {
-            video.play()
-          }
-        }
-      })
-      .catch(function (e) {
-        console.log(e.name + ': ' + e.message)
-      })
+  // LOCAL
+  const All_mediaDevices = navigator.mediaDevices
+  if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
+    console.log('getUserMedia() not supported.')
+    return
   }
+  All_mediaDevices.getUserMedia({
+    audio: true,
+    video: true
+  })
+    .then(function (vidStream) {
+      const recorder = new MediaRecorder(vidStream, {
+        mimeType: 'video/webm; codecs="opus,vp8"'
+      })
+      recorder.ondataavailable = (event) => {
+        const blob = event.data
+        blob
+          .slice(0, blob.size)
+          .arrayBuffer()
+          .then(() => {
+            if (
+              remoteMediaSource.readyState === 'open' &&
+              remoteSrcBuffer &&
+              remoteSrcBuffer.updating === false
+            ) {
+              senderWs.send(blob)
+            }
+          })
+      }
+      recorder.start(1000)
+
+      const video = localVideoRef.current
+      if (video != null) {
+        video.muted = true
+        video.srcObject = vidStream
+        video.onloadedmetadata = function () {
+          video.play()
+        }
+      }
+    })
+    .catch(function (e) {
+      console.log(e.name + ': ' + e.message)
+    })
+
+  // REMOTE
+  const remoteMediaSource = new MediaSource()
+  const arrayOfBlobs: ArrayBuffer[] = []
+  let remoteSrcBuffer: SourceBuffer
+  remoteMediaSource.addEventListener('sourceopen', () => {
+    if (
+      !remoteMediaSource.readyState.localeCompare('open') &&
+      remoteMediaSource.sourceBuffers.length == 0
+    ) {
+      remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
+      remoteSrcBuffer.addEventListener('updateend', () => {
+        remoteVideoRef.current.play()
+      })
+    }
+  })
 
   useEffect(() => {
-    handleVideo()
+    senderWs.onopen = () => {
+      console.log('SenderVOIP Connected')
+    }
+    recieverWs.onopen = () => {
+      console.log('RecieverVOIP VOIP Connected')
+    }
+    remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
+    recieverWs.onmessage = (msg) => {
+      const blob = new Blob([msg.data], {
+        type: 'video/webm; codecs="opus,vp8"'
+      })
+      blob
+        .slice(0, blob.size)
+        .arrayBuffer()
+        .then((data) => {
+          arrayOfBlobs.push(data)
+          if (
+            remoteMediaSource.readyState === 'open' &&
+            remoteSrcBuffer &&
+            remoteSrcBuffer.updating === false
+          ) {
+            const blob = arrayOfBlobs.shift()
+            remoteSrcBuffer.appendBuffer(blob)
+            // TODO optimize buffer
+          }
+        })
+    }
   }, [])
 
   return (
     <div className="flex items-center justify-center h-full w-full">
       {remoteStream ? (
-        <video ref={localVideoRef} className="block items-center justify-center h-full w-full" />
+        <video ref={remoteVideoRef} className="block items-center justify-center h-full w-full" />
       ) : (
         <img
           alt="avatar"
