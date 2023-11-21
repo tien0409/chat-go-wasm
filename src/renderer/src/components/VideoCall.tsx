@@ -6,7 +6,7 @@ import useCallStore from '../stores/useCallStore'
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
-  const voipToken = 'CLf42keZpWwrRki_eoQkpwCCOO2jpCJ_GYRSXsg3Y0w'
+  const voipToken = 'QL1Ck_XvWTkDpyinCGat5vwScYmybH87PqYVx3fbe38'
   const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
 
   const senderWs = new WebSocket(
@@ -34,7 +34,7 @@ const VideoCall = () => {
 
   // REMOTE
   const remoteMediaSource = new MediaSource()
-  const arrayOfBlobs: ArrayBuffer[] = []
+  const remoteArrayBuffer: ArrayBuffer[] = []
   let remoteSrcBuffer: SourceBuffer
 
   useEffect(() => {
@@ -44,6 +44,7 @@ const VideoCall = () => {
     recieverWs.onopen = () => {
       console.log('RecieverVOIP VOIP Connected')
     }
+
     // LOCAL setup
     All_mediaDevices.getUserMedia({
       audio: true,
@@ -57,7 +58,7 @@ const VideoCall = () => {
           localRecorder.ondataavailable = (event) => {
             senderWs.send(event.data)
           }
-          localRecorder.start(1000)
+          localRecorder.start(100)
         }
         const video = localVideoRef.current
         if (video != null) {
@@ -80,13 +81,17 @@ const VideoCall = () => {
       ) {
         remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
         remoteSrcBuffer.addEventListener('updateend', () => {
-          remoteVideoRef.current.play()
+          if (remoteVideoRef.current != null) {
+            remoteVideoRef.current.play()
+          }
         })
       }
     })
 
     // WS handler
-    remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
+    if (remoteVideoRef.current != null) {
+      remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
+    }
     recieverWs.onmessage = (msg) => {
       const blob = new Blob([msg.data], {
         type: 'video/webm; codecs="opus,vp8"'
@@ -95,20 +100,24 @@ const VideoCall = () => {
         .slice(0, blob.size)
         .arrayBuffer()
         .then((data) => {
-          arrayOfBlobs.push(data)
+          remoteArrayBuffer.push(data)
           if (
             remoteMediaSource.readyState === 'open' &&
             remoteSrcBuffer &&
             remoteSrcBuffer.updating === false
           ) {
-            const blob = arrayOfBlobs.shift()
+            const blob = remoteArrayBuffer.shift()
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             remoteSrcBuffer.appendBuffer(blob)
-            if (
-              remoteVideoRef.current.buffered.length &&
-              remoteVideoRef.current.buffered.end(0) - remoteVideoRef.current.buffered.start(0) >
-                1200
-            ) {
-              remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 1200)
+            if (remoteVideoRef.current != null) {
+              if (
+                remoteVideoRef.current.buffered.length &&
+                remoteVideoRef.current.buffered.end(0) - remoteVideoRef.current.buffered.start(0) >
+                  400
+              ) {
+                remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 400)
+              }
             }
           }
         })
