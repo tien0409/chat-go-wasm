@@ -2,11 +2,12 @@ import clsx from 'clsx'
 import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
+import { decryptblob, encryptblob } from '../crypto/cryptoLib'
 
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
-  const voipToken = 'QL1Ck_XvWTkDpyinCGat5vwScYmybH87PqYVx3fbe38'
+  const voipToken = 'dphLydZNbPojjvtwp1CaKnOvhdSPlFkjymUCRcBIVHY'
   const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
 
   const senderWs = new WebSocket(
@@ -56,7 +57,9 @@ const VideoCall = () => {
             mimeType: 'video/webm; codecs="opus,vp8"'
           })
           localRecorder.ondataavailable = (event) => {
-            senderWs.send(event.data)
+            encryptblob(event.data, 'T0EbQiT1V69ddZ8YUeVSzQ==').then((ecryptedData) => {
+              senderWs.send(ecryptedData)
+            })
           }
           localRecorder.start(100)
         }
@@ -93,7 +96,36 @@ const VideoCall = () => {
       remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     }
     recieverWs.onmessage = (msg) => {
-      const blob = new Blob([msg.data], {
+      decryptblob(msg.data, 'T0EbQiT1V69ddZ8YUeVSzQ==').then((blob) => {
+        blob
+          .slice(0, blob.size)
+          .arrayBuffer()
+          .then((data) => {
+            remoteArrayBuffer.push(data)
+            if (
+              remoteMediaSource.readyState === 'open' &&
+              remoteSrcBuffer &&
+              remoteSrcBuffer.updating === false
+            ) {
+              const blob = remoteArrayBuffer.shift()
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              remoteSrcBuffer.appendBuffer(blob)
+              if (remoteVideoRef.current != null) {
+                if (
+                  remoteVideoRef.current.buffered.length &&
+                  remoteVideoRef.current.buffered.end(0) -
+                    remoteVideoRef.current.buffered.start(0) >
+                    400
+                ) {
+                  remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 400)
+                }
+              }
+            }
+          })
+      })
+
+      /*const blob = new Blob([msg.data], {
         type: 'video/webm; codecs="opus,vp8"'
       })
       blob
@@ -120,7 +152,7 @@ const VideoCall = () => {
               }
             }
           }
-        })
+        })*/
     }
   }, [])
 
