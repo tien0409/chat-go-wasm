@@ -6,7 +6,7 @@ import useCallStore from '../stores/useCallStore'
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
-  const voipToken = 'jkJmTUSWkRz5Dh4HzqZAvUL3SBNHaBDcghw7Oup3tws'
+  const voipToken = 'CLf42keZpWwrRki_eoQkpwCCOO2jpCJ_GYRSXsg3Y0w'
   const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
 
   const senderWs = new WebSocket(
@@ -23,6 +23,7 @@ const VideoCall = () => {
 
   const localStream = true
   const remoteStream = true
+  let localRecorder: MediaRecorder
 
   // LOCAL
   const All_mediaDevices = navigator.mediaDevices
@@ -30,59 +31,11 @@ const VideoCall = () => {
     console.log('getUserMedia() not supported.')
     return
   }
-  All_mediaDevices.getUserMedia({
-    audio: true,
-    video: true
-  })
-    .then(function (vidStream) {
-      const recorder = new MediaRecorder(vidStream, {
-        mimeType: 'video/webm; codecs="opus,vp8"'
-      })
-      recorder.ondataavailable = (event) => {
-        const blob = event.data
-        blob
-          .slice(0, blob.size)
-          .arrayBuffer()
-          .then(() => {
-            if (
-              remoteMediaSource.readyState === 'open' &&
-              remoteSrcBuffer &&
-              remoteSrcBuffer.updating === false
-            ) {
-              senderWs.send(blob)
-            }
-          })
-      }
-      recorder.start(1000)
-
-      const video = localVideoRef.current
-      if (video != null) {
-        video.muted = true
-        video.srcObject = vidStream
-        video.onloadedmetadata = function () {
-          video.play()
-        }
-      }
-    })
-    .catch(function (e) {
-      console.log(e.name + ': ' + e.message)
-    })
 
   // REMOTE
   const remoteMediaSource = new MediaSource()
   const arrayOfBlobs: ArrayBuffer[] = []
   let remoteSrcBuffer: SourceBuffer
-  remoteMediaSource.addEventListener('sourceopen', () => {
-    if (
-      !remoteMediaSource.readyState.localeCompare('open') &&
-      remoteMediaSource.sourceBuffers.length == 0
-    ) {
-      remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
-      remoteSrcBuffer.addEventListener('updateend', () => {
-        remoteVideoRef.current.play()
-      })
-    }
-  })
 
   useEffect(() => {
     senderWs.onopen = () => {
@@ -91,6 +44,48 @@ const VideoCall = () => {
     recieverWs.onopen = () => {
       console.log('RecieverVOIP VOIP Connected')
     }
+    // LOCAL setup
+    All_mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    })
+      .then(function (vidStream) {
+        if (localRecorder == null) {
+          localRecorder = new MediaRecorder(vidStream, {
+            mimeType: 'video/webm; codecs="opus,vp8"'
+          })
+          localRecorder.ondataavailable = (event) => {
+            senderWs.send(event.data)
+          }
+          localRecorder.start(1000)
+        }
+        const video = localVideoRef.current
+        if (video != null) {
+          video.muted = true
+          video.srcObject = vidStream
+          video.onloadedmetadata = function () {
+            video.play()
+          }
+        }
+      })
+      .catch(function (e) {
+        console.log(e.name + ': ' + e.message)
+      })
+
+    // REMOTE setup
+    remoteMediaSource.addEventListener('sourceopen', () => {
+      if (
+        !remoteMediaSource.readyState.localeCompare('open') &&
+        remoteMediaSource.sourceBuffers.length == 0
+      ) {
+        remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
+        remoteSrcBuffer.addEventListener('updateend', () => {
+          remoteVideoRef.current.play()
+        })
+      }
+    })
+
+    // WS handler
     remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     recieverWs.onmessage = (msg) => {
       const blob = new Blob([msg.data], {
@@ -108,7 +103,13 @@ const VideoCall = () => {
           ) {
             const blob = arrayOfBlobs.shift()
             remoteSrcBuffer.appendBuffer(blob)
-            // TODO optimize buffer
+            if (
+              remoteVideoRef.current.buffered.length &&
+              remoteVideoRef.current.buffered.end(0) - remoteVideoRef.current.buffered.start(0) >
+                1200
+            ) {
+              remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 1200)
+            }
           }
         })
     }
