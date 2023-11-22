@@ -5,13 +5,17 @@ declare global {
     Go: any
     startUp: (pinValue: string) => Promise<void>
     generateInternalKeyBundle: () => Promise<string>
+    populateExternalKeyBundle: () => Promise<{keyId: string, keyBundle: string}>
     saveInternalKey: (keyBundle: string) => Promise<string>
     populateExternalKeyBundle: () => Promise<void>
+    initRatchetFromInternal: (keyBundle: string) => Promise<any>
+    loadInternalKey: (internalKey: string) => Promise<string>
     electron: ElectronAPI
     api: {
       readAuthFile(): Promise<string>
       writeAuthFile(content: string): Promise<void>
       checkAuthFile(content: string): Promise<boolean>
+      getInternalKey(): Promise<string>
     }
   }
 }

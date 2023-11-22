@@ -1,17 +1,21 @@
 import PinInput from 'react-pin-input'
-import { FormEvent, ReactNode, useEffect, useState } from 'react'
+import { useCallback, FormEvent, ReactNode, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
 import SocketProvider from '../providers/SocketProvider'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
+import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import authRepository from '../repositories/auth-repository'
+import { Loader2 } from 'lucide-react'
 
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
 
-  const { userInfo, authToken, setIsAuth } = useAuthStore()
+  const { isAuth, userInfo, setAuthToken, setUserInfo, setIsAuth } = useAuthStore()
 
   const [pinValue, setPinValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [isInit, setIsInit] = useState(true)
 
   const handleComplete = (value: string) => {
     setPinValue(value)
@@ -20,37 +24,64 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    await window.startUp(pinValue)
-    const keyBundle = await window.generateInternalKeyBundle()
-    const keyJSON = await window.saveInternalKey(keyBundle)
-    const pinValid = await window.api.checkAuthFile(keyJSON.toString())
-    setIsAuth(pinValid)
+    try {
+      await window.startUp(pinValue)
+      const keyBundle = await window.generateInternalKeyBundle()
+      const externalKeyBundle = await window.populateExternalKeyBundle()
+      await authRepository.uploadExternalKey(externalKeyBundle)
+      const keyJSON = await window.saveInternalKey(keyBundle)
+      const pinValid = await window.api.checkAuthFile(JSON.stringify(keyJSON))
+      setIsAuth(pinValid)
 
-    if (!pinValid) {
-      setErrorMessage('Mã pin không đúng')
-    } else {
-      setErrorMessage('')
+      if (!pinValid) {
+        setErrorMessage('Mã pin không đúng')
+      } else {
+        setErrorMessage('')
+      }
+    } catch (error) {
+      console.error('ERROR', error)
     }
   }
 
-  useEffect(() => {
-    if (!userInfo) navigate(SIGN_IN_PAGE)
+  const autoSignIn = useCallback(async () => {
+    if (localStorage.getItem(ACCESS_TOKEN_KEY) && !userInfo) {
+      try {
+        const [userInfoRes, authToken] = await Promise.all([
+          authRepository.getUserInfo(),
+          authRepository.getAuthToken()
+        ])
+
+        await window.startUp('1234')
+        const internalKey = await window.api.getInternalKey()
+        console.log('internalKey', internalKey)
+        if (internalKey) {
+          const res = await window.loadInternalKey(JSON.parse(internalKey))
+          console.log('res', res)
+        }
+
+        setAuthToken(authToken.data.authToken)
+        setUserInfo(userInfoRes.data)
+        setIsAuth(true)
+      } catch (error) {
+        navigate(SIGN_IN_PAGE)
+      }
+    } else if (!localStorage.getItem(ACCESS_TOKEN_KEY)) {
+      navigate(SIGN_IN_PAGE)
+    }
+    setIsInit(false)
   }, [userInfo])
 
-  // useEffect(() => {
-  //   const readAuthFile = async () => {
-  //     const data = await window.api.readAuthFile()
-  //     if (data !== 'Auth' && !signingIn) {
-  //       navigate(SIGN_IN_PAGE)
-  //     }
-  //   }
-  //
-  //   readAuthFile().then()
-  // }, [signingIn])
+  useEffect(() => {
+    autoSignIn()
+  }, [autoSignIn])
 
-  return (
+  return isInit ? (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <Loader2 className=" animate-spin w-24 h-24" />
+    </div>
+  ) : (
     <SocketProvider>
-      {authToken ? (
+      {isAuth ? (
         children
       ) : (
         <form

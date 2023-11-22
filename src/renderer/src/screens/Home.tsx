@@ -4,10 +4,25 @@ import Chat from '../components/Chat'
 import useCallStore from '../stores/useCallStore'
 import VideoCall from '../components/VideoCall'
 import useConversationStore from '../stores/useConversationStore'
+import chatRepository from '../repositories/chat-repository'
+import { useEffect } from 'react'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
   const { currentConversation } = useConversationStore()
+
+  const getChatSession = async () => {
+    try {
+      const res = await chatRepository.getPendingChatSession()
+      console.log('res', res)
+    } catch (error) {
+      console.error('ERROR', error)
+    }
+  }
+
+  useEffect(() => {
+    getChatSession().then()
+  }, [])
 
   return (
     <div className="flex h-screen w-screen relative">
