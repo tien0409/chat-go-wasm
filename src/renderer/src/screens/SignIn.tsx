@@ -29,6 +29,7 @@ const SignInScreen = () => {
         authRepository.getUserInfo(),
         authRepository.getAuthToken()
       ])
+      await window.api.createAuthFile()
       setAuthToken(authToken.data.authToken)
       setUserInfo(userInfoRes.data)
       toast.success('Đăng nhập thành công')

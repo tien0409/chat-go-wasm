@@ -4,8 +4,10 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   readAuthFile: () => ipcRenderer.invoke('r_readAuthFile'),
+  createAuthFile: () => ipcRenderer.invoke('r_createAuthFile'),
   writeAuthFile: (content: string) => ipcRenderer.invoke('r_writeAuthFile', content),
   checkAuthFile: (content: string) => ipcRenderer.invoke('r_checkAuthFile', content),
+  existAuthFile: () => ipcRenderer.invoke('r_existAuthFile'),
   getInternalKey: () => ipcRenderer.invoke('r_getInternalKey')
 }
 

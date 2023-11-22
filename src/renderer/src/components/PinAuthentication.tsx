@@ -30,6 +30,7 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
       const externalKeyBundle = await window.populateExternalKeyBundle()
       await authRepository.uploadExternalKey(externalKeyBundle)
       const keyJSON = await window.saveInternalKey(keyBundle)
+      console.log('keyJSON', keyJSON)
       const pinValid = await window.api.checkAuthFile(JSON.stringify(keyJSON))
       setIsAuth(pinValid)
 
@@ -44,6 +45,12 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
   }
 
   const autoSignIn = useCallback(async () => {
+    const isExistAuthFile = await window.api.existAuthFile()
+    if (!isExistAuthFile) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+      navigate(SIGN_IN_PAGE)
+    }
+
     if (localStorage.getItem(ACCESS_TOKEN_KEY) && !userInfo) {
       try {
         const [userInfoRes, authToken] = await Promise.all([

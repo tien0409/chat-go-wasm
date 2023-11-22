@@ -54,6 +54,8 @@ app.whenReady().then(() => {
   ipcMain.handle('r_writeAuthFile', handleWriteAuthFile)
   ipcMain.handle('r_checkAuthFile', handleCheckAuthFile)
   ipcMain.handle('r_getInternalKey', handleGetInternalKey)
+  ipcMain.handle('r_existAuthFile', handleExistAuthFile)
+  ipcMain.handle('r_createAuthFile', handleCreateAuthFile)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -107,7 +109,7 @@ function handleWriteAuthFile(_e: Electron.IpcMainInvokeEvent, content: string) {
 
 function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string) {
   try {
-    if (!fs.existsSync('auth.txt')) {
+    if (!fs.existsSync('auth.txt') || fs.readFileSync('auth.txt', 'utf8') === '') {
       handleWriteAuthFile(null as never, newContent)
       return true
     }
@@ -130,4 +132,22 @@ function handleGetInternalKey() {
   }
 
   return ''
+}
+
+function handleExistAuthFile() {
+  try {
+    return fs.existsSync('auth.txt')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+
+  return false
+}
+
+function handleCreateAuthFile() {
+  try {
+    fs.writeFileSync('auth.txt', '')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
 }

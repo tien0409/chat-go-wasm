@@ -13,8 +13,10 @@ declare global {
     electron: ElectronAPI
     api: {
       readAuthFile(): Promise<string>
+      createAuthFile(): Promise<void>
       writeAuthFile(content: string): Promise<void>
       checkAuthFile(content: string): Promise<boolean>
+      existAuthFile(): Promise<boolean>
       getInternalKey(): Promise<string>
     }
   }
