@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import * as fs from 'fs'
+import { RATCHET_FILE } from '../renderer/src/configs/consts'
 
 function createWindow(): void {
   // Create the browser window.
@@ -56,6 +57,8 @@ app.whenReady().then(() => {
   ipcMain.handle('r_getInternalKey', handleGetInternalKey)
   ipcMain.handle('r_existAuthFile', handleExistAuthFile)
   ipcMain.handle('r_createAuthFile', handleCreateAuthFile)
+  ipcMain.handle('r_writeRatchetFile', handleWriteRatchetFile)
+  ipcMain.handle('r_getRatchetId', handleGetRatchetId)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -163,4 +166,59 @@ function handleCreateAuthFile() {
   } catch (error) {
     console.error('ERROR', error)
   }
+}
+
+function handleWriteRatchetFile(
+  _e: Electron.IpcMainInvokeEvent,
+  username: string,
+  ratchetData: object
+) {
+  try {
+    if (!fs.existsSync(RATCHET_FILE)) {
+      fs.writeFileSync(RATCHET_FILE, JSON.stringify([{ username: ratchetData }]), {
+        encoding: 'utf8'
+      })
+    } else {
+      const fileContent = fs.readFileSync(RATCHET_FILE, {
+        encoding: 'utf8'
+      })
+      const parsedContent = JSON.parse(fileContent)
+      const isExist = parsedContent.find((r) => Object.keys(r)[0] === username)
+      if (isExist) {
+        parsedContent.forEach((r) => {
+          if (Object.keys(r)[0] === username) {
+            r[username] = ratchetData
+          }
+        })
+      } else {
+        parsedContent.push({ [username]: ratchetData })
+      }
+
+      fs.writeFileSync(RATCHET_FILE, JSON.stringify(parsedContent), {
+        encoding: 'utf8'
+      })
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+function handleGetRatchetId(_e: Electron.IpcMainInvokeEvent, username: string) {
+  try {
+    if (fs.existsSync(RATCHET_FILE)) {
+      const content = fs.readFileSync(RATCHET_FILE, {
+        encoding: 'utf8'
+      })
+
+      if (content) {
+        const parsedContent = JSON.parse(content)
+        const ratchet = parsedContent.find((r) => Object.keys(r)[0] === username)
+        if (ratchet) return ratchet[username].ratchetId
+      }
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+
+  return ''
 }

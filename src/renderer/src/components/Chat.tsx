@@ -6,15 +6,13 @@ import { useCallback, useRef } from 'react'
 import IMessage from '../interfaces/IMessage'
 
 const Chat = () => {
-  const { messages, setMessages } = useConversationStore()
   const lastMessageRef = useRef<HTMLDivElement>(null)
 
   const handleScrollBottom = useCallback(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
-  const handleSendMessage = (content: string) => {
-    setMessages([...messages, { content } as IMessage])
+  const handleScroll = (content: string) => {
     requestIdleCallback(() => {
       lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
     })
@@ -29,7 +27,7 @@ const Chat = () => {
       </div>
 
       <div className="mt-5 absolute bottom-2 inset-x-0">
-        <MessageForm handleSendMessage={handleSendMessage} />
+        <MessageForm handleScroll={handleScroll} />
       </div>
     </>
   )

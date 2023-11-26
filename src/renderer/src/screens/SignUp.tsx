@@ -1,13 +1,18 @@
 import Input from '../components/Input'
 import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SIGN_IN_PAGE } from '../configs/routes'
+import { HOME_PAGE, SIGN_IN_PAGE } from '../configs/routes'
 import { toast } from 'react-toastify'
 import authRepository from '../repositories/auth-repository'
 import PinInput from 'react-pin-input'
+import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import axiosInstance from '../libs/axios'
+import useAuthStore from '../stores/useAuthStore'
 
 const SignUpScreen = () => {
   const navigate = useNavigate()
+
+  const { setIsAuth, setUserInfo, setAuthToken } = useAuthStore()
 
   const [formValue, setFormValue] = useState({
     username: '',
@@ -45,12 +50,33 @@ const SignUpScreen = () => {
     try {
       await window.startUp(pinValue)
       const keyBundle = await window.generateInternalKeyBundle()
-      await window.populateExternalKeyBundle()
       const keyJSON = await window.saveInternalKey(keyBundle)
       keyJSON.pin = pinValue
       await window.api.writeAuthFile(keyJSON)
+
+      const internalKey = await window.api.getInternalKey()
+      if (internalKey) {
+        await window.loadInternalKey(internalKey)
+      }
+
       toast.success('Tạo mã pin thành công')
-      navigate(SIGN_IN_PAGE)
+
+      const res = await authRepository.login(formValue)
+      localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken)
+      axiosInstance.defaults.headers['Authorization'] = `Bearer ${res.data.accessToken}`
+
+      const externalKeyBundle = await window.populateExternalKeyBundle()
+
+      const [userInfoRes, authToken] = await Promise.all([
+        authRepository.getUserInfo(),
+        authRepository.getAuthToken(),
+        authRepository.uploadExternalKey(externalKeyBundle)
+      ])
+      setAuthToken(authToken.data.authToken)
+      setUserInfo(userInfoRes.data)
+      setIsAuth(true)
+
+      navigate(HOME_PAGE)
     } catch (error) {
       console.error('ERROR', error)
     }

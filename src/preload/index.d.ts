@@ -9,7 +9,10 @@ declare global {
     saveInternalKey: (keyBundle: string) => Promise<any>
     populateExternalKeyBundle: () => Promise<void>
     initRatchetFromInternal: (keyBundle: string) => Promise<any>
+    saveRatchet: (ratchetId: string) => Promise<void>
     loadInternalKey: (internalKey: string) => Promise<string>
+    sendMessage: (ratchetId: string, isBinary: boolean, message: string) => Promise<any>
+    isRatchetExist: (ratchetId: string) => Promise<boolean>
     electron: ElectronAPI
     api: {
       readAuthFile(): Promise<string>
@@ -18,6 +21,8 @@ declare global {
       checkAuthFile(content: string): Promise<boolean>
       existAuthFile(): Promise<boolean>
       getInternalKey(): Promise<string>
+      writeRatchetFile(username: string, ratchetData: any): Promise<void>
+      getRatchetId(username: string): Promise<string>
     }
   }
 }

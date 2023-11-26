@@ -4,7 +4,8 @@ import IChatSessionInit from '../interfaces/IChatSessionInit'
 const chatRepository = {
   initChatSession: (body: IChatSessionInit) => axiosInstance.post('/chatSession/init', body),
   getPendingChatSession: () => axiosInstance.get('/chatSession'),
-  getPendingChatMessage: () => axiosInstance.get('/message?chatSessionId')
+  getPendingChatMessage: (chatSessionId: string) =>
+    axiosInstance.get(`/message?chatSessionId=${chatSessionId}`)
 }
 
 export default chatRepository

@@ -3,9 +3,11 @@ import { Phone, Video } from 'lucide-react'
 import { FormEvent, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
+import useConversationStore from '../stores/useConversationStore'
 
 const MessageSearch = () => {
   const { typeCall, setTypeCall } = useCallStore()
+  const { currentConversation } = useConversationStore()
 
   const [searchValue, setSearchValue] = useState('')
 
@@ -35,7 +37,7 @@ const MessageSearch = () => {
           className="w-10 h-10 rounded-full"
         />
         <div className="flex flex-col">
-          <h4 className="font-semibold text-sm">Username</h4>
+          <h4 className="font-semibold text-sm">{currentConversation}</h4>
           <p className="text-xs text-gray-400">Active 1 hour ago</p>
         </div>
       </div>

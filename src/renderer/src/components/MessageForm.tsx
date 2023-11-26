@@ -1,24 +1,55 @@
 import Input from './Input'
 import { SendHorizonal } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
+import useConversationStore from '../stores/useConversationStore'
+import useWebSocketStore from '../stores/useWebSocketStore'
+import IMessage from '../interfaces/IMessage'
+import useAuthStore from '../stores/useAuthStore'
 
 type MessageFormProps = {
-  handleSendMessage: (content: string) => void
+  handleScroll: (content: string) => void
 }
 
 const MessageForm = (props: MessageFormProps) => {
-  const { handleSendMessage } = props
+  const { handleScroll } = props
+
+  const { messages, setMessages, currentRatchetId } = useConversationStore()
+  const { websocket } = useWebSocketStore()
+  const { userInfo } = useAuthStore()
 
   const [content, setContent] = useState('')
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const value = content.trim()
     if (!value) return
 
-    handleSendMessage(value)
+    console.log('currentRatchetId', currentRatchetId)
+    const res = await window.sendMessage(currentRatchetId!, false, content)
+    websocket?.send(
+      JSON.stringify({
+        type: 'CHAT_TEXT',
+        senderUsername: userInfo?.username,
+        plainMessage: '',
+        chatSessionId: currentRatchetId,
+        index: res.index,
+        cipherMessage: res.cipherMessage,
+        isBinary: res.isBinary
+      })
+    )
+    console.log('res', res)
+
+    setMessages([...messages, { content } as IMessage])
     setContent('')
+    handleScroll(value)
   }
+
+  useEffect(() => {
+    if (websocket)
+      websocket.onmessage = (msg) => {
+        console.log('msg', msg)
+      }
+  }, [websocket])
 
   return (
     <form className="flex relative h-full px-4" onSubmit={handleSubmit}>

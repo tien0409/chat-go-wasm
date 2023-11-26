@@ -8,7 +8,10 @@ const api = {
   writeAuthFile: (content: string) => ipcRenderer.invoke('r_writeAuthFile', content),
   checkAuthFile: (content: string) => ipcRenderer.invoke('r_checkAuthFile', content),
   existAuthFile: () => ipcRenderer.invoke('r_existAuthFile'),
-  getInternalKey: () => ipcRenderer.invoke('r_getInternalKey')
+  getInternalKey: () => ipcRenderer.invoke('r_getInternalKey'),
+  writeRatchetFile: (username: string, ratchetData: string) =>
+    ipcRenderer.invoke('r_writeRatchetFile', username, ratchetData),
+  getRatchetId: (username: string) => ipcRenderer.invoke('r_getRatchetId', username)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -9,12 +9,20 @@ import { useEffect } from 'react'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
-  const { currentConversation } = useConversationStore()
+  const { currentConversation, setConversations } = useConversationStore()
 
   const getChatSession = async () => {
     try {
       const res = await chatRepository.getPendingChatSession()
-      console.log('res', res)
+      if (res) {
+        const newConversations = res.data.map((item) => {
+          return {
+            receiver: item.senderUserName,
+            id: item.chatSessionId
+          }
+        })
+        setConversations(newConversations)
+      }
     } catch (error) {
       console.error('ERROR', error)
     }

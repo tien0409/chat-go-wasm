@@ -3,8 +3,13 @@ import Input from './Input'
 import { FormEvent, useState } from 'react'
 import MenuAction from './MenuAction'
 import userRepository from '../repositories/user-repository'
+import useConversationStore from '../stores/useConversationStore'
+import useAuthStore from '../stores/useAuthStore'
 
 const ConversationSearch = () => {
+  const { setConversations } = useConversationStore()
+  const { userInfo } = useAuthStore()
+
   const [searchValue, setSearchValue] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -12,7 +17,16 @@ const ConversationSearch = () => {
     try {
       e.preventDefault()
       const res = await userRepository.searchUser(searchValue)
-      console.log('res', res)
+      const newConversation =
+        res.data
+          ?.map((user) => ({
+            id: user.id,
+            receiver: user.userName,
+            lastMessage: ''
+          }))
+          .filter((conversation) => conversation.id !== userInfo?.id) || []
+
+      setConversations(newConversation)
     } catch (error) {
       console.error('ERROR', error)
     }

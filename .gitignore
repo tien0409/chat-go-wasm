@@ -2,3 +2,5 @@ node_modules
 dist
 out
 *.log*
+auth.json
+ratchet.json

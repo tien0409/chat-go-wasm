@@ -3,6 +3,7 @@ import { memo } from 'react'
 import useConversationStore from '../stores/useConversationStore'
 import IConversation from '../interfaces/IConversation'
 import chatRepository from '../repositories/chat-repository'
+import userRepository from '../repositories/user-repository'
 
 type ConversationItemProps = {
   conversation: IConversation
@@ -11,30 +12,42 @@ type ConversationItemProps = {
 const ConversationItem = (props: ConversationItemProps) => {
   const { conversation } = props
 
-  const currentConversation = useConversationStore((state) => state.currentConversation)
-  const setCurrentConversation = useConversationStore((state) => state.setCurrentConversation)
+  const { currentConversation, setCurrentRatchetId, setMessages, setCurrentConversation } =
+    useConversationStore()
+
+  const createRatchet = async () => {
+    const res = await userRepository.getExternalUserKey(conversation.receiver)
+    const initRatchetRes = await window.initRatchetFromInternal(JSON.stringify(res.data))
+    await chatRepository.initChatSession({
+      chatSessionId: initRatchetRes.ratchetId,
+      ephemeralKey: initRatchetRes.ephemeralKey,
+      receiverUserName: conversation.receiver
+    })
+    await window.api.writeRatchetFile(conversation.receiver, initRatchetRes)
+    await window.saveRatchet(initRatchetRes.ratchetId)
+    return initRatchetRes.ratchetId
+  }
 
   const handleSelectConversation = async () => {
     try {
-      setCurrentConversation(conversation.id)
-      await window.startUp('1234')
-      const res = await window.initRatchetFromInternal(
-        '{\n' +
-          '    "identityKey": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEP3SGt_4bDdxyZYAj-UKCOvzq0P2nVMKaDJkl-ySW3prWvHtcgvxud7_ftj4LhQgBo3a89poHSRSD-v0TRcbVcYoMg1bOkFm-OU7c-46nd4-eCt_0YJOKbb_L_O9p6vDi",\n' +
-          '    "preKey": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEZakQDuZvQ8TbxIL-dLlHfa2wTiE767quK20B2XeAPAHcOeueWQMHQWdFjMEI982iS2u_Idyl5lvfoR6HBH0OkrbB0_t5ZNGAor0uZmYgTu1iKL_IuJrplnIJQKomzwch",\n' +
-          '    "preKeySig": "MGUCMCBSp9FNciMC7SdofvFnsggcAFzeB6jemvC6ZT5W2en3F2eI3oO65ektZfVDAtzH7AIxAPdVK5bqpPCHw4J0PMFpKxpytLF7xCyauvk7s6Q1sVufOCC9yIhsEommKG_ttx9XGg",\n' +
-          '    "oneTimeKeyId": "374a8636-8956-11ee-a65a-2e3b7058e381",\n' +
-          '    "oneTimeKey": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEe6y7Qw_DL86dW5NW53wGkDvgYgP3KnFQT9-nTvIFjnKFk7YiZq19POAwGvp6uOSAvHA7SRvOHHffbhHo29IK17FhLZWJT_ZdqC9W_xkgtcRwSAQVbKag43I3pUpTHNxp",\n' +
-          '    "oneTimeKeySig": "MGUCMQD81fFoH6swwbZlV7zTKsLug2eepGi06RgWhJFoJ-c-ZL5bvUHwjn6AFxXycANYTV4CMAurS7W3jRpP7vUnCQPrAASBcoq43Inh4-tViWBFLJnogqMRkBf_eyh2aZVkbHGcpg"\n' +
-          '}'
-      )
-      console.log('res', res)
-      const res2 = await chatRepository.initChatSession({
-        chatSessionId: res.ratchetId,
-        ephemeralKey: res.ephemeralKey,
-        receiverUserName: 'tien1'
-      })
-      console.log('res2', res2)
+      setCurrentConversation(conversation.receiver)
+      const res = await chatRepository.getPendingChatMessage(conversation.id)
+      setMessages(res.data)
+
+      let ratchetId = await window.api.getRatchetId(conversation.receiver)
+
+      if (ratchetId) {
+        const isExist = await window.isRatchetExist(ratchetId)
+        console.log('isExist', isExist)
+
+        if (!isExist) {
+          ratchetId = await createRatchet()
+        }
+      } else {
+        ratchetId = await createRatchet()
+      }
+
+      setCurrentRatchetId(ratchetId)
     } catch (error) {
       console.error('ERROR', error)
     }
@@ -44,7 +57,7 @@ const ConversationItem = (props: ConversationItemProps) => {
     <div
       className={clsx(
         'border-b cursor-pointer flex gap-x-3 justify-between hover:bg-black/10 w-full p-3 items-center',
-        currentConversation === conversation.id && 'bg-yellow-50/80'
+        currentConversation === conversation.receiver && 'bg-yellow-50/80'
       )}
       onClick={handleSelectConversation}
     >

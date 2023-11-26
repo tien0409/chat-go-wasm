@@ -35,14 +35,11 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
         ])
 
         await window.startUp(pinValue)
-        await window.generateInternalKeyBundle()
         const externalKeyBundle = await window.populateExternalKeyBundle()
         await authRepository.uploadExternalKey(externalKeyBundle)
         const internalKey = await window.api.getInternalKey()
-        console.log('internalKey', internalKey)
         if (internalKey) {
-          const res = await window.loadInternalKey(JSON.parse(internalKey))
-          console.log('res', res)
+          await window.loadInternalKey(internalKey)
         }
 
         setAuthToken(authToken.data.authToken)
