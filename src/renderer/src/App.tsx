@@ -22,7 +22,7 @@ const App = () => {
               </PinAuthentication>
             }
           />
-          <Route path={SIGN_IN_PAGE} element={<VideoCall />} />
+          <Route path={SIGN_IN_PAGE} element={<SignInScreen />} />
           <Route path={SIGN_UP_PAGE} element={<SignUpScreen />} />
         </Routes>
       </BrowserRouter>

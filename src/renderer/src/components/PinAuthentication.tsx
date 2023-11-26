@@ -7,6 +7,7 @@ import { SIGN_IN_PAGE } from '../configs/routes'
 import { ACCESS_TOKEN_KEY } from '../configs/consts'
 import authRepository from '../repositories/auth-repository'
 import { Loader2 } from 'lucide-react'
+import IAuthFile from '../interfaces/IAuthFile'
 
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
@@ -21,44 +22,22 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
     setPinValue(value)
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleCheckPin = async () => {
+    const keyStrSaved = await window.api.readAuthFile()
+    if (!keyStrSaved) navigate(SIGN_IN_PAGE)
 
-    try {
-      await window.startUp(pinValue)
-      const keyBundle = await window.generateInternalKeyBundle()
-      const externalKeyBundle = await window.populateExternalKeyBundle()
-      await authRepository.uploadExternalKey(externalKeyBundle)
-      const keyJSON = await window.saveInternalKey(keyBundle)
-      console.log('keyJSON', keyJSON)
-      const pinValid = await window.api.checkAuthFile(JSON.stringify(keyJSON))
-      setIsAuth(pinValid)
-
-      if (!pinValid) {
-        setErrorMessage('Mã pin không đúng')
-      } else {
-        setErrorMessage('')
-      }
-    } catch (error) {
-      console.error('ERROR', error)
-    }
-  }
-
-  const autoSignIn = useCallback(async () => {
-    const isExistAuthFile = await window.api.existAuthFile()
-    if (!isExistAuthFile) {
-      localStorage.removeItem(ACCESS_TOKEN_KEY)
-      navigate(SIGN_IN_PAGE)
-    }
-
-    if (localStorage.getItem(ACCESS_TOKEN_KEY) && !userInfo) {
+    const keySaved = JSON.parse(keyStrSaved) as IAuthFile
+    if (keySaved.pin === pinValue) {
       try {
         const [userInfoRes, authToken] = await Promise.all([
           authRepository.getUserInfo(),
           authRepository.getAuthToken()
         ])
 
-        await window.startUp('1234')
+        await window.startUp(pinValue)
+        await window.generateInternalKeyBundle()
+        const externalKeyBundle = await window.populateExternalKeyBundle()
+        await authRepository.uploadExternalKey(externalKeyBundle)
         const internalKey = await window.api.getInternalKey()
         console.log('internalKey', internalKey)
         if (internalKey) {
@@ -69,12 +48,27 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
         setAuthToken(authToken.data.authToken)
         setUserInfo(userInfoRes.data)
         setIsAuth(true)
+        setErrorMessage('')
       } catch (error) {
         navigate(SIGN_IN_PAGE)
       }
-    } else if (!localStorage.getItem(ACCESS_TOKEN_KEY)) {
+    } else {
+      setErrorMessage('Mã pin không đúng')
+    }
+  }
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    handleCheckPin().then()
+  }
+
+  const autoSignIn = useCallback(async () => {
+    const isExistAuthFile = await window.api.existAuthFile()
+    if (!isExistAuthFile || !localStorage.getItem(ACCESS_TOKEN_KEY)) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
       navigate(SIGN_IN_PAGE)
     }
+
     setIsInit(false)
   }, [userInfo])
 

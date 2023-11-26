@@ -87,10 +87,12 @@ app.on('window-all-closed', () => {
 
 function handleReadAuthFile() {
   try {
-    if (fs.existsSync('auth.txt')) {
-      return fs.readFileSync('auth.txt', 'utf8')
-    } else {
-      fs.writeFileSync('auth.txt', 'Auth')
+    if (fs.existsSync('auth.json')) {
+      return fs
+        .readFileSync('auth.json', {
+          encoding: 'utf8'
+        })
+        .toString()
     }
   } catch (error) {
     console.error('ERROR', error)
@@ -101,7 +103,9 @@ function handleReadAuthFile() {
 
 function handleWriteAuthFile(_e: Electron.IpcMainInvokeEvent, content: string) {
   try {
-    fs.writeFileSync('auth.txt', JSON.stringify(content), 'utf8')
+    fs.writeFileSync('auth.json', JSON.stringify(content), {
+      encoding: 'utf8'
+    })
   } catch (error) {
     console.error('ERROR', error)
   }
@@ -109,12 +113,19 @@ function handleWriteAuthFile(_e: Electron.IpcMainInvokeEvent, content: string) {
 
 function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string) {
   try {
-    if (!fs.existsSync('auth.txt') || fs.readFileSync('auth.txt', 'utf8') === '') {
+    if (
+      !fs.existsSync('auth.json') ||
+      fs.readFileSync('auth.json', {
+        encoding: 'utf8'
+      }) === ''
+    ) {
       handleWriteAuthFile(null as never, newContent)
       return true
     }
 
-    const authContent = fs.readFileSync('auth.txt', 'utf8')
+    const authContent = fs.readFileSync('auth.json', {
+      encoding: 'utf8'
+    })
     return authContent === newContent
   } catch (error) {
     console.error('ERROR', error)
@@ -124,8 +135,10 @@ function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string
 
 function handleGetInternalKey() {
   try {
-    if (fs.existsSync('auth.txt')) {
-      return fs.readFileSync('auth.txt', 'utf8')
+    if (fs.existsSync('auth.json')) {
+      return fs.readFileSync('auth.json', {
+        encoding: 'utf8'
+      })
     }
   } catch (error) {
     console.error('ERROR', error)
@@ -136,7 +149,7 @@ function handleGetInternalKey() {
 
 function handleExistAuthFile() {
   try {
-    return fs.existsSync('auth.txt')
+    return fs.existsSync('auth.json')
   } catch (error) {
     console.error('ERROR', error)
   }
@@ -146,7 +159,7 @@ function handleExistAuthFile() {
 
 function handleCreateAuthFile() {
   try {
-    fs.writeFileSync('auth.txt', '')
+    fs.writeFileSync('auth.json', '')
   } catch (error) {
     console.error('ERROR', error)
   }

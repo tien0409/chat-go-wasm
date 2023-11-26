@@ -6,7 +6,7 @@ declare global {
     startUp: (pinValue: string) => Promise<void>
     generateInternalKeyBundle: () => Promise<string>
     populateExternalKeyBundle: () => Promise<{keyId: string, keyBundle: string}>
-    saveInternalKey: (keyBundle: string) => Promise<string>
+    saveInternalKey: (keyBundle: string) => Promise<any>
     populateExternalKeyBundle: () => Promise<void>
     initRatchetFromInternal: (keyBundle: string) => Promise<any>
     loadInternalKey: (internalKey: string) => Promise<string>

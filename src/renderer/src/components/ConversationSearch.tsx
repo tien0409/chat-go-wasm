@@ -2,13 +2,20 @@ import { Menu } from 'lucide-react'
 import Input from './Input'
 import { FormEvent, useState } from 'react'
 import MenuAction from './MenuAction'
+import userRepository from '../repositories/user-repository'
 
 const ConversationSearch = () => {
   const [searchValue, setSearchValue] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault()
+      const res = await userRepository.searchUser(searchValue)
+      console.log('res', res)
+    } catch (error) {
+      console.error('ERROR', error)
+    }
   }
 
   return (
