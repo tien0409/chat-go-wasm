@@ -1,4 +1,6 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
+import IRatchetDetail from "../renderer/src/interfaces/IRatchetDetail";
+import IMessage from "../renderer/src/interfaces/IMessage";
 
 declare global {
   interface Window {
@@ -9,10 +11,13 @@ declare global {
     saveInternalKey: (keyBundle: string) => Promise<any>
     populateExternalKeyBundle: () => Promise<void>
     initRatchetFromInternal: (keyBundle: string) => Promise<any>
-    saveRatchet: (ratchetId: string) => Promise<void>
+    initRatchetFromExternal: (externalKey: string,ephemeralKey: string, ratchetId: string ) => Promise<{ratchetId: string}>
+    loadRatchet: (ratchetDetail: string) => Promise<string>
+    saveRatchet: (ratchetId: string) => Promise<IRatchetDetail>
     loadInternalKey: (internalKey: string) => Promise<string>
     sendMessage: (ratchetId: string, isBinary: boolean, message: string) => Promise<any>
     isRatchetExist: (ratchetId: string) => Promise<boolean>
+    receiveMessage: (data: string) => Promise<string>
     electron: ElectronAPI
     api: {
       readAuthFile(): Promise<string>
@@ -21,8 +26,12 @@ declare global {
       checkAuthFile(content: string): Promise<boolean>
       existAuthFile(): Promise<boolean>
       getInternalKey(): Promise<string>
+
+      createRatchetFile(username: string, ratchetDetail: IRatchetDetail, ratchetId: string): Promise<void>
       writeRatchetFile(username: string, ratchetData: any): Promise<void>
       getRatchetId(username: string): Promise<string>
+      getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>
+      addMessageToRatchet(receiver: string, messages: IMessage[]): Promise<void>
     }
   }
 }

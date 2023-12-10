@@ -3,7 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import * as fs from 'fs'
-import { RATCHET_FILE } from '../renderer/src/configs/consts'
+import { AUTH_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
+import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
+import IMessage from '../renderer/src/interfaces/IMessage'
 
 function createWindow(): void {
   // Create the browser window.
@@ -57,8 +59,11 @@ app.whenReady().then(() => {
   ipcMain.handle('r_getInternalKey', handleGetInternalKey)
   ipcMain.handle('r_existAuthFile', handleExistAuthFile)
   ipcMain.handle('r_createAuthFile', handleCreateAuthFile)
-  ipcMain.handle('r_writeRatchetFile', handleWriteRatchetFile)
+
+  ipcMain.handle('r_createRatchetFile', handleCreateRatchetFile)
   ipcMain.handle('r_getRatchetId', handleGetRatchetId)
+  ipcMain.handle('r_getRatchetDetailList', handleGetRatchetDetailList)
+  ipcMain.handle('r_addMessageToRatchet', handleAddMessageToRatchet)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -90,9 +95,9 @@ app.on('window-all-closed', () => {
 
 function handleReadAuthFile() {
   try {
-    if (fs.existsSync('auth.json')) {
+    if (fs.existsSync(AUTH_FILE)) {
       return fs
-        .readFileSync('auth.json', {
+        .readFileSync(AUTH_FILE, {
           encoding: 'utf8'
         })
         .toString()
@@ -106,7 +111,7 @@ function handleReadAuthFile() {
 
 function handleWriteAuthFile(_e: Electron.IpcMainInvokeEvent, content: string) {
   try {
-    fs.writeFileSync('auth.json', JSON.stringify(content), {
+    fs.writeFileSync(AUTH_FILE, JSON.stringify(content), {
       encoding: 'utf8'
     })
   } catch (error) {
@@ -117,8 +122,8 @@ function handleWriteAuthFile(_e: Electron.IpcMainInvokeEvent, content: string) {
 function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string) {
   try {
     if (
-      !fs.existsSync('auth.json') ||
-      fs.readFileSync('auth.json', {
+      !fs.existsSync(AUTH_FILE) ||
+      fs.readFileSync(AUTH_FILE, {
         encoding: 'utf8'
       }) === ''
     ) {
@@ -126,7 +131,7 @@ function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string
       return true
     }
 
-    const authContent = fs.readFileSync('auth.json', {
+    const authContent = fs.readFileSync(AUTH_FILE, {
       encoding: 'utf8'
     })
     return authContent === newContent
@@ -138,8 +143,8 @@ function handleCheckAuthFile(_e: Electron.IpcMainInvokeEvent, newContent: string
 
 function handleGetInternalKey() {
   try {
-    if (fs.existsSync('auth.json')) {
-      return fs.readFileSync('auth.json', {
+    if (fs.existsSync(AUTH_FILE)) {
+      return fs.readFileSync(AUTH_FILE, {
         encoding: 'utf8'
       })
     }
@@ -152,7 +157,7 @@ function handleGetInternalKey() {
 
 function handleExistAuthFile() {
   try {
-    return fs.existsSync('auth.json')
+    return fs.existsSync(AUTH_FILE)
   } catch (error) {
     console.error('ERROR', error)
   }
@@ -162,42 +167,24 @@ function handleExistAuthFile() {
 
 function handleCreateAuthFile() {
   try {
-    fs.writeFileSync('auth.json', '')
+    fs.writeFileSync(AUTH_FILE, '')
   } catch (error) {
     console.error('ERROR', error)
   }
 }
 
-function handleWriteRatchetFile(
+function handleCreateRatchetFile(
   _e: Electron.IpcMainInvokeEvent,
   username: string,
-  ratchetData: object
+  ratchetDetail: IRatchetDetail,
+  ratchetId: string
 ) {
   try {
-    if (!fs.existsSync(RATCHET_FILE)) {
-      fs.writeFileSync(RATCHET_FILE, JSON.stringify([{ username: ratchetData }]), {
-        encoding: 'utf8'
-      })
-    } else {
-      const fileContent = fs.readFileSync(RATCHET_FILE, {
-        encoding: 'utf8'
-      })
-      const parsedContent = JSON.parse(fileContent)
-      const isExist = parsedContent.find((r) => Object.keys(r)[0] === username)
-      if (isExist) {
-        parsedContent.forEach((r) => {
-          if (Object.keys(r)[0] === username) {
-            r[username] = ratchetData
-          }
-        })
-      } else {
-        parsedContent.push({ [username]: ratchetData })
-      }
+    const filename = CHAT_PREFIX + username + '.json'
 
-      fs.writeFileSync(RATCHET_FILE, JSON.stringify(parsedContent), {
-        encoding: 'utf8'
-      })
-    }
+    fs.writeFileSync(filename, JSON.stringify({ ratchetDetail, ratchetId }), {
+      encoding: 'utf8'
+    })
   } catch (error) {
     console.error('ERROR', error)
   }
@@ -205,15 +192,15 @@ function handleWriteRatchetFile(
 
 function handleGetRatchetId(_e: Electron.IpcMainInvokeEvent, username: string) {
   try {
-    if (fs.existsSync(RATCHET_FILE)) {
-      const content = fs.readFileSync(RATCHET_FILE, {
+    const filename = CHAT_PREFIX + username + '.json'
+    if (fs.existsSync(filename)) {
+      const content = fs.readFileSync(filename, {
         encoding: 'utf8'
       })
 
       if (content) {
         const parsedContent = JSON.parse(content)
-        const ratchet = parsedContent.find((r) => Object.keys(r)[0] === username)
-        if (ratchet) return ratchet[username].ratchetId
+        return parsedContent.ratchetId
       }
     }
   } catch (error) {
@@ -221,4 +208,52 @@ function handleGetRatchetId(_e: Electron.IpcMainInvokeEvent, username: string) {
   }
 
   return ''
+}
+
+function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUsername: string) {
+  const result: IRatchetDetail[] = []
+  try {
+    const ratchetFilenames = fs
+      .readdirSync(process.cwd())
+      .filter(
+        (filename) => filename.startsWith(CHAT_PREFIX) && filename !== CHAT_PREFIX + currentUsername
+      )
+
+    for (const ratchetFilename of ratchetFilenames) {
+      const content = fs.readFileSync(ratchetFilename, {
+        encoding: 'utf8'
+      })
+      result.push(JSON.parse(content).ratchetDetail)
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+
+  return result
+}
+
+function handleAddMessageToRatchet(
+  _e: Electron.IpcMainInvokeEvent,
+  receiver: string,
+  messages: IMessage[]
+) {
+  try {
+    const filename = CHAT_PREFIX + receiver + '.json'
+    if (!fs.existsSync(filename)) {
+      throw new Error('Ratchet file not found')
+    } else {
+      const fileContent = fs.readFileSync(filename, {
+        encoding: 'utf8'
+      })
+      const parsedContent = JSON.parse(fileContent)
+      if (!parsedContent.messages) parsedContent.messages = []
+      parsedContent.messages = [...parsedContent, ...messages]
+
+      fs.writeFileSync(filename, JSON.stringify(parsedContent), {
+        encoding: 'utf8'
+      })
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
 }

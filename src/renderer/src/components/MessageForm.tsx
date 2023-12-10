@@ -24,7 +24,6 @@ const MessageForm = (props: MessageFormProps) => {
     const value = content.trim()
     if (!value) return
 
-    console.log('currentRatchetId', currentRatchetId)
     const res = await window.sendMessage(currentRatchetId!, false, content)
     websocket?.send(
       JSON.stringify({
@@ -37,7 +36,6 @@ const MessageForm = (props: MessageFormProps) => {
         isBinary: res.isBinary
       })
     )
-    console.log('res', res)
 
     setMessages([...messages, { content } as IMessage])
     setContent('')

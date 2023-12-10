@@ -9,7 +9,7 @@ interface ISocketStoreType {
 const useWebSocketStore = create<ISocketStoreType>((setState, getState) => ({
   websocket: null,
   initWebSocket: () => {
-    const WEB_SOCKET_URL = `ws://165.232.174.21:7777/ws?authToken=${
+    const WEB_SOCKET_URL = `wss://31df-171-251-90-158.ngrok.io//ws?authToken=${
       useAuthStore.getState().authToken
     }`
 

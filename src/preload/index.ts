@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
 
 // Custom APIs for renderer
 const api = {
@@ -9,9 +10,13 @@ const api = {
   checkAuthFile: (content: string) => ipcRenderer.invoke('r_checkAuthFile', content),
   existAuthFile: () => ipcRenderer.invoke('r_existAuthFile'),
   getInternalKey: () => ipcRenderer.invoke('r_getInternalKey'),
-  writeRatchetFile: (username: string, ratchetData: string) =>
-    ipcRenderer.invoke('r_writeRatchetFile', username, ratchetData),
-  getRatchetId: (username: string) => ipcRenderer.invoke('r_getRatchetId', username)
+  createRatchetFile: (username: string, ratchetDetail: IRatchetDetail, ratchetId) =>
+    ipcRenderer.invoke('r_createRatchetFile', username, ratchetDetail, ratchetId),
+  getRatchetId: (username: string) => ipcRenderer.invoke('r_getRatchetId', username),
+  getRatchetDetailList: (currentUsername: string) =>
+    ipcRenderer.invoke('r_getRatchetDetailList', currentUsername),
+  addMessageToRatchet: (receiver: string, messages: string) =>
+    ipcRenderer.invoke('r_addMessageToRatchet', receiver, messages)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -6,21 +6,51 @@ import VideoCall from '../components/VideoCall'
 import useConversationStore from '../stores/useConversationStore'
 import chatRepository from '../repositories/chat-repository'
 import { useEffect } from 'react'
+import IConversation from '../interfaces/IConversation'
+import useAuthStore from '../stores/useAuthStore'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
   const { currentConversation, setConversations } = useConversationStore()
+  const { userInfo } = useAuthStore()
+
+  const initRatchet = async () => {
+    try {
+      const ratchetList = await window.api.getRatchetDetailList(userInfo!.username)
+      for (const ratchet of ratchetList) {
+        await window.loadRatchet(JSON.stringify(ratchet))
+      }
+    } catch (error) {
+      console.error('ERROR', error)
+    }
+  }
 
   const getChatSession = async () => {
     try {
       const res = await chatRepository.getPendingChatSession()
+
       if (res) {
-        const newConversations = res.data.map((item) => {
-          return {
+        const newConversations: IConversation[] = []
+        for (const item of res.data) {
+          const ratchetRes = await window.initRatchetFromExternal(
+            JSON.stringify(item.senderKeyBundle),
+            item.ephemeralKey,
+            item.chatSessionId
+          )
+          await chatRepository.completeChatSession(ratchetRes.ratchetId)
+          const ratchetDetail = await window.saveRatchet(ratchetRes.ratchetId)
+          await window.api.createRatchetFile(
+            item.senderUserName,
+            ratchetDetail,
+            ratchetRes.ratchetId
+          )
+
+          newConversations.push({
+            lastMessage: '',
             receiver: item.senderUserName,
             id: item.chatSessionId
-          }
-        })
+          })
+        }
         setConversations(newConversations)
       }
     } catch (error) {
@@ -29,6 +59,7 @@ const HomeScreen = () => {
   }
 
   useEffect(() => {
+    initRatchet().then()
     getChatSession().then()
   }, [])
 

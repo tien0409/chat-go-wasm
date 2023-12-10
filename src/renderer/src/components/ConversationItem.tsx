@@ -4,6 +4,7 @@ import useConversationStore from '../stores/useConversationStore'
 import IConversation from '../interfaces/IConversation'
 import chatRepository from '../repositories/chat-repository'
 import userRepository from '../repositories/user-repository'
+import IMessage from '../interfaces/IMessage'
 
 type ConversationItemProps = {
   conversation: IConversation
@@ -23,8 +24,12 @@ const ConversationItem = (props: ConversationItemProps) => {
       ephemeralKey: initRatchetRes.ephemeralKey,
       receiverUserName: conversation.receiver
     })
-    await window.api.writeRatchetFile(conversation.receiver, initRatchetRes)
-    await window.saveRatchet(initRatchetRes.ratchetId)
+    const ratchetDetail = await window.saveRatchet(initRatchetRes.ratchetId)
+    await window.api.createRatchetFile(
+      conversation.receiver,
+      ratchetDetail,
+      initRatchetRes.ratchetId
+    )
     return initRatchetRes.ratchetId
   }
 
@@ -32,13 +37,11 @@ const ConversationItem = (props: ConversationItemProps) => {
     try {
       setCurrentConversation(conversation.receiver)
       const res = await chatRepository.getPendingChatMessage(conversation.id)
-      setMessages(res.data)
 
       let ratchetId = await window.api.getRatchetId(conversation.receiver)
 
       if (ratchetId) {
         const isExist = await window.isRatchetExist(ratchetId)
-        console.log('isExist', isExist)
 
         if (!isExist) {
           ratchetId = await createRatchet()
@@ -47,6 +50,25 @@ const ConversationItem = (props: ConversationItemProps) => {
         ratchetId = await createRatchet()
       }
 
+      const newMessages: IMessage[] = []
+      for (let i = 0; i < res.data.length; i++) {
+        const item = res.data[i]
+        const content = await window.receiveMessage(
+          JSON.stringify({
+            chatSessionId: item.chatSessionId,
+            index: item.index,
+            cipherMessage: item.cipherMessage,
+            isBinary: item.isBinary
+          })
+        )
+
+        newMessages.push({
+          content
+        })
+      }
+      await window.api.addMessageToRatchet(conversation.receiver, newMessages)
+
+      setMessages(newMessages)
       setCurrentRatchetId(ratchetId)
     } catch (error) {
       console.error('ERROR', error)

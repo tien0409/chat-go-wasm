@@ -8,11 +8,12 @@ import { ACCESS_TOKEN_KEY } from '../configs/consts'
 import authRepository from '../repositories/auth-repository'
 import { Loader2 } from 'lucide-react'
 import IAuthFile from '../interfaces/IAuthFile'
+import axiosInstance from '../libs/axios'
 
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
 
-  const { isAuth, userInfo, setAuthToken, setUserInfo, setIsAuth } = useAuthStore()
+  const { isAuth, setAuthToken, setUserInfo, setIsAuth } = useAuthStore()
 
   const [pinValue, setPinValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
@@ -35,8 +36,6 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
         ])
 
         await window.startUp(pinValue)
-        const externalKeyBundle = await window.populateExternalKeyBundle()
-        await authRepository.uploadExternalKey(externalKeyBundle)
         const internalKey = await window.api.getInternalKey()
         if (internalKey) {
           await window.loadInternalKey(internalKey)
@@ -64,10 +63,14 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
     if (!isExistAuthFile || !localStorage.getItem(ACCESS_TOKEN_KEY)) {
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       navigate(SIGN_IN_PAGE)
+    } else {
+      axiosInstance.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem(
+        ACCESS_TOKEN_KEY
+      )}`
     }
 
     setIsInit(false)
-  }, [userInfo])
+  }, [])
 
   useEffect(() => {
     autoSignIn()
