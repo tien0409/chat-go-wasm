@@ -6,6 +6,7 @@ import * as fs from 'fs'
 import { AUTH_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
 import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
 import IMessage from '../renderer/src/interfaces/IMessage'
+import { session } from 'electron'
 
 function createWindow(): void {
   // Create the browser window.
@@ -29,6 +30,10 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+      details.requestHeaders['User-Agent'] = 'SuperDuperAgent'
+      callback({ cancel: false, requestHeaders: details.requestHeaders })
+    })
     mainWindow.show()
   })
 
@@ -63,7 +68,9 @@ app.whenReady().then(() => {
   ipcMain.handle('r_createRatchetFile', handleCreateRatchetFile)
   ipcMain.handle('r_getRatchetId', handleGetRatchetId)
   ipcMain.handle('r_getRatchetDetailList', handleGetRatchetDetailList)
+  ipcMain.handle('r_getOldChatSessions', handleGetOldChatSessions)
   ipcMain.handle('r_addMessageToRatchet', handleAddMessageToRatchet)
+  ipcMain.handle('r_getMessagesByUsername', handleGetMessagesByUsername)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -216,7 +223,8 @@ function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUser
     const ratchetFilenames = fs
       .readdirSync(process.cwd())
       .filter(
-        (filename) => filename.startsWith(CHAT_PREFIX) && filename !== CHAT_PREFIX + currentUsername
+        (filename) =>
+          filename.startsWith(CHAT_PREFIX) && filename !== CHAT_PREFIX + currentUsername + '.json'
       )
 
     for (const ratchetFilename of ratchetFilenames) {
@@ -224,6 +232,32 @@ function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUser
         encoding: 'utf8'
       })
       result.push(JSON.parse(content).ratchetDetail)
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+
+  return result
+}
+
+function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUsername: string) {
+  const result: { receiver: string; ratchetId: string }[] = []
+  try {
+    const chatFilenames = fs
+      .readdirSync(process.cwd())
+      .filter(
+        (filename) =>
+          filename.startsWith(CHAT_PREFIX) && filename !== CHAT_PREFIX + currentUsername + '.json'
+      )
+
+    for (const chatFilename of chatFilenames) {
+      const content = fs.readFileSync(chatFilename, {
+        encoding: 'utf8'
+      })
+      result.push({
+        receiver: chatFilename.replace(CHAT_PREFIX, '').replace('.json', ''),
+        ratchetId: JSON.parse(content).ratchetId
+      })
     }
   } catch (error) {
     console.error('ERROR', error)
@@ -247,11 +281,29 @@ function handleAddMessageToRatchet(
       })
       const parsedContent = JSON.parse(fileContent)
       if (!parsedContent.messages) parsedContent.messages = []
-      parsedContent.messages = [...parsedContent, ...messages]
+      parsedContent.messages = [...parsedContent.messages, ...messages]
 
       fs.writeFileSync(filename, JSON.stringify(parsedContent), {
         encoding: 'utf8'
       })
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+function handleGetMessagesByUsername(_e: Electron.IpcMainInvokeEvent, username: string) {
+  try {
+    const filename = CHAT_PREFIX + username + '.json'
+    if (!fs.existsSync(filename)) {
+      return []
+    } else {
+      const fileContent = fs.readFileSync(filename, {
+        encoding: 'utf8'
+      })
+      const parsedContent = JSON.parse(fileContent)
+      if (!parsedContent.messages) parsedContent.messages = []
+      return parsedContent.messages
     }
   } catch (error) {
     console.error('ERROR', error)

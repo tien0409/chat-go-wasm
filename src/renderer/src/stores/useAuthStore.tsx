@@ -3,12 +3,12 @@ import { create } from 'zustand'
 interface IAuthStore {
   userInfo: {
     id: string
-    username: string
+    userName: string
     aliasName: string
   } | null
   authToken: string
   setAuthToken: (authToken: string) => void
-  setUserInfo: (userInfo: { id: string; username: string; aliasName: string } | null) => void
+  setUserInfo: (userInfo: { id: string; userName: string; aliasName: string } | null) => void
   signingIn: boolean
   setSigningIn: (signingIn: boolean) => void
   isAuth: boolean
@@ -19,7 +19,7 @@ const useAuthStore = create<IAuthStore>((set) => ({
   authToken: '',
   setAuthToken: (authToken: string) => set({ authToken }),
   userInfo: null,
-  setUserInfo: (userInfo: { username: string; id: string; aliasName: string } | null) =>
+  setUserInfo: (userInfo: { userName: string; id: string; aliasName: string } | null) =>
     set({ userInfo }),
   signingIn: false,
   setSigningIn: (signingIn: boolean) => set({ signingIn }),

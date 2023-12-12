@@ -36,6 +36,7 @@ const ConversationItem = (props: ConversationItemProps) => {
   const handleSelectConversation = async () => {
     try {
       setCurrentConversation(conversation.receiver)
+      const oldMessages = await window.api.getMessagesByUsername(conversation.receiver)
       const res = await chatRepository.getPendingChatMessage(conversation.id)
 
       let ratchetId = await window.api.getRatchetId(conversation.receiver)
@@ -50,8 +51,12 @@ const ConversationItem = (props: ConversationItemProps) => {
         ratchetId = await createRatchet()
       }
 
-      const newMessages: IMessage[] = []
-      for (let i = 0; i < res.data.length; i++) {
+      const newMessages: IMessage[] = oldMessages.map((item) => ({
+        content: item.content,
+        index: item.index,
+        sender: item.sender
+      }))
+      for (let i = 0; i < res?.data?.length; i++) {
         const item = res.data[i]
         const content = await window.receiveMessage(
           JSON.stringify({
@@ -63,7 +68,9 @@ const ConversationItem = (props: ConversationItemProps) => {
         )
 
         newMessages.push({
-          content
+          content,
+          index: item.index,
+          sender: item.senderUsername
         })
       }
       await window.api.addMessageToRatchet(conversation.receiver, newMessages)

@@ -20,7 +20,7 @@ const useConversationStore = create<IConversationStore>((set) => ({
   setConversations: (conversations) => set({ conversations }),
   currentConversation: null,
   setCurrentConversation: (id) => set({ currentConversation: id }),
-  messages: Array(255).fill({ content: 1 }),
+  messages: [],
   setMessages: (messages) => set({ messages })
 }))
 

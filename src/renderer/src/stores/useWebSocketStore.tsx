@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import useAuthStore from './useAuthStore'
+import { SOCKET_URL } from '../configs/consts'
 
 interface ISocketStoreType {
   websocket: WebSocket | null
@@ -9,9 +10,7 @@ interface ISocketStoreType {
 const useWebSocketStore = create<ISocketStoreType>((setState, getState) => ({
   websocket: null,
   initWebSocket: () => {
-    const WEB_SOCKET_URL = `wss://31df-171-251-90-158.ngrok.io//ws?authToken=${
-      useAuthStore.getState().authToken
-    }`
+    const WEB_SOCKET_URL = `${SOCKET_URL}/ws?authToken=${useAuthStore.getState().authToken}`
 
     if (WEB_SOCKET_URL && !getState().websocket) {
       const _websocket = new WebSocket(WEB_SOCKET_URL)

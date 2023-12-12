@@ -5,7 +5,7 @@ import useCallStore from '../stores/useCallStore'
 import VideoCall from '../components/VideoCall'
 import useConversationStore from '../stores/useConversationStore'
 import chatRepository from '../repositories/chat-repository'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import IConversation from '../interfaces/IConversation'
 import useAuthStore from '../stores/useAuthStore'
 
@@ -16,7 +16,7 @@ const HomeScreen = () => {
 
   const initRatchet = async () => {
     try {
-      const ratchetList = await window.api.getRatchetDetailList(userInfo!.username)
+      const ratchetList = await window.api.getRatchetDetailList(userInfo!.userName)
       for (const ratchet of ratchetList) {
         await window.loadRatchet(JSON.stringify(ratchet))
       }
@@ -25,13 +25,22 @@ const HomeScreen = () => {
     }
   }
 
-  const getChatSession = async () => {
+  const getChatSession = useCallback(async () => {
     try {
+      // init chat
+      const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
+      const newConversations: IConversation[] = oldChatSessions.map((item) => ({
+        lastMessage: '',
+        receiver: item.receiver,
+        id: item.ratchetId
+      }))
+
+      // get pending chat session
       const res = await chatRepository.getPendingChatSession()
 
       if (res) {
-        const newConversations: IConversation[] = []
         for (const item of res.data) {
+          console.log('item', item)
           const ratchetRes = await window.initRatchetFromExternal(
             JSON.stringify(item.senderKeyBundle),
             item.ephemeralKey,
@@ -56,12 +65,11 @@ const HomeScreen = () => {
     } catch (error) {
       console.error('ERROR', error)
     }
-  }
+  }, [userInfo])
 
   useEffect(() => {
-    initRatchet().then()
-    getChatSession().then()
-  }, [])
+    Promise.all([initRatchet(), getChatSession()]).then()
+  }, [getChatSession])
 
   return (
     <div className="flex h-screen w-screen relative">

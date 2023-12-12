@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Trash } from 'lucide-react'
 import IMessage from '../interfaces/IMessage'
 import { memo } from 'react'
+import useAuthStore from '../stores/useAuthStore'
 
 type MessageItemProps = {
   message: IMessage
@@ -10,7 +11,9 @@ type MessageItemProps = {
 const MessageItem = (props: MessageItemProps) => {
   const { message } = props
 
-  const isSender = Math.random() > 0.5
+  const { userInfo } = useAuthStore()
+
+  const isSender = message.sender === userInfo?.userName
 
   return (
     <div className={clsx('flex gap-x-3 group', isSender ? 'flex-row-reverse' : 'items-start')}>

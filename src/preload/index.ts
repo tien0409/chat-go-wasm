@@ -15,8 +15,12 @@ const api = {
   getRatchetId: (username: string) => ipcRenderer.invoke('r_getRatchetId', username),
   getRatchetDetailList: (currentUsername: string) =>
     ipcRenderer.invoke('r_getRatchetDetailList', currentUsername),
+  getOldChatSessions: (currentUsername: string) =>
+    ipcRenderer.invoke('r_getOldChatSessions', currentUsername),
   addMessageToRatchet: (receiver: string, messages: string) =>
-    ipcRenderer.invoke('r_addMessageToRatchet', receiver, messages)
+    ipcRenderer.invoke('r_addMessageToRatchet', receiver, messages),
+  getMessagesByUsername: (username: string) =>
+    ipcRenderer.invoke('r_getMessagesByUsername', username)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
