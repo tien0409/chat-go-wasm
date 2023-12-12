@@ -7,3 +7,5 @@ export const RATCHET_FILE = 'ratchet.json'
 export const AUTH_FILE = 'auth.json'
 // export const AUTH_FILE = 'auth2.json'
 export const TEXT_TYPE = 'CHAT_TEXT' as const
+
+export const MESSAGE_EVENT = 'message'

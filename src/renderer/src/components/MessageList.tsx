@@ -2,6 +2,8 @@ import MessageItem from './MessageItem'
 import { memo, MouseEvent, MutableRefObject, useEffect, useState } from 'react'
 import { MoveDown } from 'lucide-react'
 import useConversationStore from '../stores/useConversationStore'
+import useWebSocketStore from '../stores/useWebSocketStore'
+import { MESSAGE_EVENT } from '../configs/consts'
 
 type MessageListProps = {
   lastMessageRef: MutableRefObject<HTMLDivElement | null>
@@ -11,7 +13,8 @@ type MessageListProps = {
 const MessageList = (props: MessageListProps) => {
   const { lastMessageRef, handleScrollBottom } = props
 
-  const { messages } = useConversationStore()
+  const { messages, currentConversation, setMessages } = useConversationStore()
+  const { websocket } = useWebSocketStore()
 
   const [isBottom, setIsBottom] = useState(false)
 
@@ -28,6 +31,37 @@ const MessageList = (props: MessageListProps) => {
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
+
+  useEffect(() => {
+    if (websocket)
+      websocket.onmessage = async (msg) => {
+        if (msg.type === MESSAGE_EVENT) {
+          const data = JSON.parse(msg.data)
+          const content = await window.receiveMessage(
+            JSON.stringify({
+              chatSessionId: data.chatSessionId,
+              index: data.index,
+              cipherMessage: data.cipherMessage,
+              isBinary: data.isBinary
+            })
+          )
+
+          const newMessage = {
+            index: data.index,
+            content: content,
+            type: data.type,
+            sender: data.senderUsername
+          }
+
+          console.log('data', data)
+          console.log('currentConversation', currentConversation)
+          if (data.senderUsername === currentConversation) {
+            setMessages([...messages, newMessage])
+            await window.api.addMessageToRatchet(currentConversation!, [newMessage])
+          }
+        }
+      }
+  }, [websocket, messages])
 
   return (
     <div

@@ -1,6 +1,6 @@
 import Input from './Input'
 import { SendHorizonal } from 'lucide-react'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
@@ -51,13 +51,6 @@ const MessageForm = (props: MessageFormProps) => {
     setContent('')
     handleScroll(value)
   }
-
-  useEffect(() => {
-    if (websocket)
-      websocket.onmessage = (msg) => {
-        console.log('msg', msg)
-      }
-  }, [websocket])
 
   return (
     <form className="flex relative h-full px-4" onSubmit={handleSubmit}>
