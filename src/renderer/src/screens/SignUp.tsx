@@ -49,8 +49,8 @@ const SignUpScreen = () => {
     e.preventDefault()
     try {
       await window.startUp(pinValue)
-      const keyBundle = await window.generateInternalKeyBundle()
-      const keyJSON = await window.saveInternalKey(keyBundle)
+      await window.generateInternalKeyBundle()
+      const keyJSON = await window.saveInternalKey()
       keyJSON.pin = pinValue
       await window.api.writeAuthFile(keyJSON)
 

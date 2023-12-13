@@ -10,9 +10,9 @@
   overflow: auto;
 }
 
-.custom__scroll::-webkit-scrollbar-thumb  {
-    border-radius: 5px;
-    background-color: #505279;
+.custom__scroll::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: #505279;
 }
 
 .custom__scroll::-webkit-scrollbar {

@@ -8,7 +8,8 @@ declare global {
     startUp: (pinValue: string) => Promise<void>
     generateInternalKeyBundle: () => Promise<string>
     populateExternalKeyBundle: () => Promise<{keyId: string, keyBundle: string}>
-    saveInternalKey: (keyBundle: string) => Promise<any>
+    regeneratePreKey: () => Promise<{keyId: string, keyBundle: string}>
+    saveInternalKey: () => Promise<any>
     populateExternalKeyBundle: () => Promise<void>
     initRatchetFromInternal: (keyBundle: string) => Promise<any>
     initRatchetFromExternal: (externalKey: string,ephemeralKey: string, ratchetId: string ) => Promise<{ratchetId: string}>

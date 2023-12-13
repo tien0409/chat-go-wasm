@@ -62,4 +62,4 @@ const MenuAction = (props: MenuActionProps) => {
   )
 }
 
-export default MenuAction
+export default MenuAction;

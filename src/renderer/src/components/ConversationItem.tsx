@@ -107,4 +107,4 @@ const ConversationItem = (props: ConversationItemProps) => {
   )
 }
 
-export default memo(ConversationItem)
+export default memo(ConversationItem);

@@ -1,12 +1,11 @@
-import { ipcMain, app, shell, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import * as fs from 'fs'
 import { AUTH_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
 import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
 import IMessage from '../renderer/src/interfaces/IMessage'
-import { session } from 'electron'
 
 function createWindow(): void {
   // Create the browser window.

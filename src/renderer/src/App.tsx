@@ -7,7 +7,6 @@ import PinAuthentication from './components/PinAuthentication'
 import WasmProvider from './providers/WasmProvider'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import VideoCall from './components/VideoCall'
 
 const App = () => {
   return (

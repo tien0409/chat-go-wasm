@@ -66,4 +66,4 @@ const MessageSearch = () => {
   )
 }
 
-export default MessageSearch
+export default MessageSearch;

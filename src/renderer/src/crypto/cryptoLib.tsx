@@ -3,6 +3,8 @@ const algorithm = {
   iv: new Uint8Array(16)
 }
 
+const bcrypt = require('bcrypt')
+
 function base64ToArrayBuffer(base64) {
   const binaryString = atob(base64)
   const bytes = new Uint8Array(binaryString.length)

@@ -1,5 +1,5 @@
 import PinInput from 'react-pin-input'
-import { useCallback, FormEvent, ReactNode, useEffect, useState } from 'react'
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
 import SocketProvider from '../providers/SocketProvider'
 import { useNavigate } from 'react-router-dom'
@@ -30,16 +30,24 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
     const keySaved = JSON.parse(keyStrSaved) as IAuthFile
     if (keySaved.pin === pinValue) {
       try {
-        const [userInfoRes, authToken] = await Promise.all([
-          authRepository.getUserInfo(),
-          authRepository.getAuthToken()
-        ])
-
         await window.startUp(pinValue)
+
         const internalKey = await window.api.getInternalKey()
         if (internalKey) {
           await window.loadInternalKey(internalKey)
         }
+
+        const newExternalKey = await window.regeneratePreKey()
+
+        const [userInfoRes, authToken] = await Promise.all([
+          authRepository.getUserInfo(),
+          authRepository.getAuthToken(),
+          authRepository.uploadExternalKey(newExternalKey)
+        ])
+
+        const keyJSON = await window.saveInternalKey()
+        keyJSON.pin = pinValue
+        await window.api.writeAuthFile(keyJSON)
 
         setAuthToken(authToken.data.authToken)
         setUserInfo(userInfoRes.data)

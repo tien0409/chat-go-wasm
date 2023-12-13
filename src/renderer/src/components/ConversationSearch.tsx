@@ -53,4 +53,4 @@ const ConversationSearch = () => {
   )
 }
 
-export default ConversationSearch
+export default ConversationSearch;

@@ -80,4 +80,4 @@ const SignInScreen = () => {
   )
 }
 
-export default SignInScreen
+export default SignInScreen;

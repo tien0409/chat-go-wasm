@@ -40,4 +40,4 @@ const MessageItem = (props: MessageItemProps) => {
   )
 }
 
-export default memo(MessageItem)
+export default memo(MessageItem);

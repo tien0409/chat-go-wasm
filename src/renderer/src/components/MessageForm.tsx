@@ -70,4 +70,4 @@ const MessageForm = (props: MessageFormProps) => {
   )
 }
 
-export default MessageForm
+export default MessageForm;
