@@ -1,8 +1,10 @@
 import clsx from 'clsx'
-import { LogOut } from 'lucide-react'
+import { Image, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
 import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import { useState } from 'react'
+import ChangeAvatarModal from './ChangeAvatarModal'
 
 type MenuActionProps = {
   isMenuOpen: boolean
@@ -13,6 +15,8 @@ const MenuAction = (props: MenuActionProps) => {
   const { isMenuOpen, setIsMenuOpen } = props
 
   const navigate = useNavigate()
+
+  const [isOpenChangeAvatar, setIsOpenChangeAvatar] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
@@ -26,6 +30,8 @@ const MenuAction = (props: MenuActionProps) => {
         isMenuOpen ? 'visible opacity-100' : 'opacity-0 invisible'
       )}
     >
+      {isOpenChangeAvatar && <ChangeAvatarModal setIsOpen={setIsOpenChangeAvatar} />}
+
       <div
         className="fixed duration-300 inset-0 bg-black/20"
         onClick={() => setIsMenuOpen(false)}
@@ -51,6 +57,13 @@ const MenuAction = (props: MenuActionProps) => {
         <ul className="mt-8">
           <li
             className="flex p-2 gap-x-3 items-center cursor-pointer hover:bg-yellow-500/20 transition-colors"
+            onClick={() => setIsOpenChangeAvatar(true)}
+          >
+            <Image />
+            <span>Change Avatar</span>
+          </li>
+          <li
+            className="flex p-2 gap-x-3 items-center cursor-pointer hover:bg-yellow-500/20 transition-colors"
             onClick={handleLogout}
           >
             <LogOut />
@@ -62,4 +75,4 @@ const MenuAction = (props: MenuActionProps) => {
   )
 }
 
-export default MenuAction;
+export default MenuAction
