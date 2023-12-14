@@ -37,17 +37,10 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
           await window.loadInternalKey(internalKey)
         }
 
-        const newExternalKey = await window.regeneratePreKey()
-
         const [userInfoRes, authToken] = await Promise.all([
           authRepository.getUserInfo(),
-          authRepository.getAuthToken(),
-          authRepository.uploadExternalKey(newExternalKey)
+          authRepository.getAuthToken()
         ])
-
-        const keyJSON = await window.saveInternalKey()
-        keyJSON.pin = pinValue
-        await window.api.writeAuthFile(keyJSON)
 
         setAuthToken(authToken.data.authToken)
         setUserInfo(userInfoRes.data)

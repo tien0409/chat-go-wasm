@@ -1,5 +1,5 @@
 export const API_URL = 'http://127.0.0.1:7777'
-export const SOCKET_URL = 'wss://127.0.0.1:7777'
+export const SOCKET_URL = 'ws://127.0.0.1:7777'
 export const ACCESS_TOKEN_KEY = 'access_token'
 export const CHAT_PREFIX = 'chat_'
 export const CHAT_FILE = 'chat.json'

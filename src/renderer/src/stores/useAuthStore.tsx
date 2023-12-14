@@ -27,4 +27,4 @@ const useAuthStore = create<IAuthStore>((set) => ({
   setIsAuth: (isAuth: boolean) => set({ isAuth })
 }))
 
-export default useAuthStore;
+export default useAuthStore
