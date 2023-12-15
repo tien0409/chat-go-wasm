@@ -8,6 +8,7 @@ import PinInput from 'react-pin-input'
 import { ACCESS_TOKEN_KEY } from '../configs/consts'
 import axiosInstance from '../libs/axios'
 import useAuthStore from '../stores/useAuthStore'
+import { hashSync } from 'bcryptjs'
 
 const SignUpScreen = () => {
   const navigate = useNavigate()
@@ -51,7 +52,9 @@ const SignUpScreen = () => {
       await window.startUp(pinValue)
       await window.generateInternalKeyBundle()
       const keyJSON = await window.saveInternalKey()
-      keyJSON.pin = pinValue
+
+      keyJSON.pin = hashSync(pinValue, 10)
+
       await window.api.writeAuthFile(keyJSON)
 
       const internalKey = await window.api.getInternalKey()

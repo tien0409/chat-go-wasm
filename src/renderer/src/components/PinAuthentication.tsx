@@ -9,6 +9,7 @@ import authRepository from '../repositories/auth-repository'
 import { Loader2 } from 'lucide-react'
 import IAuthFile from '../interfaces/IAuthFile'
 import axiosInstance from '../libs/axios'
+import { compareSync } from 'bcryptjs'
 
 const PinAuthentication = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
@@ -28,7 +29,10 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
     if (!keyStrSaved) navigate(SIGN_IN_PAGE)
 
     const keySaved = JSON.parse(keyStrSaved) as IAuthFile
-    if (keySaved.pin === pinValue) {
+
+    const isMatch = compareSync(pinValue, keySaved.pin)
+
+    if (isMatch) {
       try {
         await window.startUp(pinValue)
 

@@ -29,9 +29,8 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    session.defaultSession.clearStorageData()
     session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-      details.requestHeaders['User-Agent'] = 'SuperDuperAgent'
+      details.requestHeaders['User-Agent'] = 'DesktopClient'
       callback({ cancel: false, requestHeaders: details.requestHeaders })
     })
     mainWindow.show()
