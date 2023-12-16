@@ -65,6 +65,7 @@ app.whenReady().then(() => {
   ipcMain.handle('r_createAuthFile', handleCreateAuthFile)
 
   ipcMain.handle('r_createRatchetFile', handleCreateRatchetFile)
+  ipcMain.handle('r_changeRatchetDetail', handleChangeRatchetDetail)
   ipcMain.handle('r_getRatchetId', handleGetRatchetId)
   ipcMain.handle('r_getRatchetDetailList', handleGetRatchetDetailList)
   ipcMain.handle('r_getOldChatSessions', handleGetOldChatSessions)
@@ -189,6 +190,28 @@ function handleCreateRatchetFile(
     const filename = CHAT_PREFIX + username + '.json'
 
     fs.writeFileSync(filename, JSON.stringify({ ratchetDetail, ratchetId }), {
+      encoding: 'utf8'
+    })
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+function handleChangeRatchetDetail(
+  _e: Electron.IpcMainInvokeEvent,
+  username: string,
+  ratchetDetail: IRatchetDetail
+) {
+  try {
+    const filename = CHAT_PREFIX + username + '.json'
+
+    const fileContent = fs.readFileSync(filename, {
+      encoding: 'utf8'
+    })
+    const parsedContent = JSON.parse(fileContent)
+    parsedContent.ratchetDetail = ratchetDetail
+
+    fs.writeFileSync(filename, JSON.stringify(parsedContent), {
       encoding: 'utf8'
     })
   } catch (error) {

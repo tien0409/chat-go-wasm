@@ -12,6 +12,8 @@ const api = {
   getInternalKey: () => ipcRenderer.invoke('r_getInternalKey'),
   createRatchetFile: (username: string, ratchetDetail: IRatchetDetail, ratchetId) =>
     ipcRenderer.invoke('r_createRatchetFile', username, ratchetDetail, ratchetId),
+  changeRatchetDetail: (receiver: string, ratchetDetail: IRatchetDetail) =>
+    ipcRenderer.invoke('r_changeRatchetDetail', receiver, ratchetDetail),
   getRatchetId: (username: string) => ipcRenderer.invoke('r_getRatchetId', username),
   getRatchetDetailList: (currentUsername: string) =>
     ipcRenderer.invoke('r_getRatchetDetailList', currentUsername),

@@ -2,5 +2,6 @@ node_modules
 dist
 out
 *.log*
-auth.json
+auth*.json
+chat*.json
 ratchet.json

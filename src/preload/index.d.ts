@@ -29,6 +29,7 @@ declare global {
       getInternalKey(): Promise<string>
 
       createRatchetFile(username: string, ratchetDetail: IRatchetDetail, ratchetId: string): Promise<void>
+      changeRatchetDetail(receiver: string, ratchetDetail: IRatchetDetail): Promise<void>
       writeRatchetFile(username: string, ratchetData: any): Promise<void>
       getRatchetId(username: string): Promise<string>
       getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>

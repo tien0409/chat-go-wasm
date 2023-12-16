@@ -24,9 +24,7 @@ const MessageForm = (props: MessageFormProps) => {
     const value = content.trim()
     if (!value) return
 
-    console.log('currentRatchetId', currentRatchetId)
     const res = await window.sendMessage(currentRatchetId!, false, content)
-    console.log('res', res)
     websocket?.send(
       JSON.stringify({
         type: TEXT_TYPE,
@@ -70,4 +68,4 @@ const MessageForm = (props: MessageFormProps) => {
   )
 }
 
-export default MessageForm;
+export default MessageForm

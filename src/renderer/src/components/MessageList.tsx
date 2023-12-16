@@ -53,11 +53,12 @@ const MessageList = (props: MessageListProps) => {
             sender: data.senderUsername
           }
 
-          console.log('data', data)
-          console.log('currentConversation', currentConversation)
           if (data.senderUsername === currentConversation) {
             setMessages([...messages, newMessage])
             await window.api.addMessageToRatchet(currentConversation!, [newMessage])
+            requestIdleCallback(() => {
+              lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+            })
           }
         }
       }
