@@ -8,4 +8,5 @@ export const RATCHET_FILE = 'ratchet.json'
 export const AUTH_FILE = 'auth2.json'
 export const TEXT_TYPE = 'CHAT_TEXT' as const
 
-export const MESSAGE_EVENT = 'message'
+export const MESSAGE_EVENT = 'CHAT_TEXT'
+export const CHAT_NEW_EVENT = 'CHAT_NEW'

@@ -209,7 +209,7 @@ function handleChangeRatchetDetail(
       encoding: 'utf8'
     })
     const parsedContent = JSON.parse(fileContent)
-    parsedContent.ratchetDetail = ratchetDetail
+    if (ratchetDetail) parsedContent.ratchetDetail = ratchetDetail
 
     fs.writeFileSync(filename, JSON.stringify(parsedContent), {
       encoding: 'utf8'
