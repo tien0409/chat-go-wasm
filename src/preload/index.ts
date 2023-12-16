@@ -10,6 +10,11 @@ const api = {
   checkAuthFile: (content: string) => ipcRenderer.invoke('r_checkAuthFile', content),
   existAuthFile: () => ipcRenderer.invoke('r_existAuthFile'),
   getInternalKey: () => ipcRenderer.invoke('r_getInternalKey'),
+
+  updateAvatar: (avatar: string, filename: string) =>
+    ipcRenderer.invoke('r_updateAvatar', avatar, filename),
+  getAvatar: () => ipcRenderer.invoke('r_getAvatar'),
+
   createRatchetFile: (username: string, ratchetDetail: IRatchetDetail, ratchetId) =>
     ipcRenderer.invoke('r_createRatchetFile', username, ratchetDetail, ratchetId),
   changeRatchetDetail: (receiver: string, ratchetDetail: IRatchetDetail) =>

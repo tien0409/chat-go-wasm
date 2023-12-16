@@ -13,7 +13,14 @@ type MessageFormProps = {
 const MessageForm = (props: MessageFormProps) => {
   const { handleScroll } = props
 
-  const { messages, setMessages, currentRatchetId, currentConversation } = useConversationStore()
+  const {
+    messages,
+    setConversations,
+    setMessages,
+    currentRatchetId,
+    currentConversation,
+    conversations
+  } = useConversationStore()
   const { websocket } = useWebSocketStore()
   const { userInfo } = useAuthStore()
 
@@ -46,6 +53,15 @@ const MessageForm = (props: MessageFormProps) => {
     await window.api.addMessageToRatchet(currentConversation!, [newMessage])
 
     setMessages([...messages, newMessage])
+
+    const conversationIndex = conversations.findIndex((item) => item.id === currentConversation)
+    const newConversations = [...conversations]
+    newConversations[conversationIndex].lastMessage = value
+    const temp = newConversations[conversationIndex]
+    newConversations.splice(conversationIndex, 1)
+    newConversations.unshift(temp)
+    setConversations(newConversations)
+
     setContent('')
     handleScroll(value)
   }

@@ -5,6 +5,8 @@ import { SIGN_IN_PAGE } from '../configs/routes'
 import { ACCESS_TOKEN_KEY } from '../configs/consts'
 import { useState } from 'react'
 import ChangeAvatarModal from './ChangeAvatarModal'
+import useWebSocketStore from '../stores/useWebSocketStore'
+import useAuthStore from '../stores/useAuthStore'
 
 type MenuActionProps = {
   isMenuOpen: boolean
@@ -15,13 +17,17 @@ const MenuAction = (props: MenuActionProps) => {
   const { isMenuOpen, setIsMenuOpen } = props
 
   const navigate = useNavigate()
+  const { websocket } = useWebSocketStore()
+  const { userInfo } = useAuthStore()
 
   const [isOpenChangeAvatar, setIsOpenChangeAvatar] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
+    websocket!.close()
     navigate(SIGN_IN_PAGE)
   }
+  console.log('avatar', userInfo)
 
   return (
     <div
@@ -44,13 +50,9 @@ const MenuAction = (props: MenuActionProps) => {
         )}
       >
         <div className="flex gap-x-3 items-center">
-          <img
-            src="https://source.unsplash.com/RZrIJ8C0860"
-            alt="image"
-            className="w-10 h-10 rounded-full"
-          />
+          <img src={userInfo?.avatar} alt="image" className="w-10 h-10 rounded-full" />
           <div className="flex flex-col">
-            <h4 className="font-semibold text-sm">Username</h4>
+            <h4 className="font-semibold text-sm">{userInfo?.userName}</h4>
           </div>
         </div>
 

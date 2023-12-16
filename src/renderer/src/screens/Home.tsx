@@ -30,7 +30,7 @@ const HomeScreen = () => {
       // init chat
       const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
       const newConversations: IConversation[] = oldChatSessions.map((item) => ({
-        lastMessage: '',
+        lastMessage: item.lastMessage,
         receiver: item.receiver,
         id: item.ratchetId
       }))
@@ -40,7 +40,6 @@ const HomeScreen = () => {
 
       if (res) {
         for (const item of res.data) {
-          console.log('item', item)
           const ratchetRes = await window.initRatchetFromExternal(
             JSON.stringify(item.senderKeyBundle),
             item.ephemeralKey,
@@ -55,7 +54,7 @@ const HomeScreen = () => {
           )
 
           newConversations.push({
-            lastMessage: '',
+            lastMessage: 'Đang chờ phản hồi',
             receiver: item.senderUserName,
             id: item.chatSessionId
           })

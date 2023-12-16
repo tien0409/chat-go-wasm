@@ -33,35 +33,31 @@ const MessageList = (props: MessageListProps) => {
   }, [])
 
   useEffect(() => {
-    if (websocket)
-      websocket.onmessage = async (msg) => {
-        if (msg.type === MESSAGE_EVENT) {
-          const data = JSON.parse(msg.data)
-          const content = await window.receiveMessage(
-            JSON.stringify({
-              chatSessionId: data.chatSessionId,
-              index: data.index,
-              cipherMessage: data.cipherMessage,
-              isBinary: data.isBinary
-            })
-          )
-
-          const newMessage = {
+    if (!websocket) return
+    websocket.onmessage = async (msg) => {
+      const data = JSON.parse(msg.data)
+      if (data.type === MESSAGE_EVENT && data.senderUsername === currentConversation) {
+        const content = await window.receiveMessage(
+          JSON.stringify({
+            chatSessionId: data.chatSessionId,
             index: data.index,
-            content: content,
-            type: data.type,
-            sender: data.senderUsername
-          }
-
-          if (data.senderUsername === currentConversation) {
-            setMessages([...messages, newMessage])
-            await window.api.addMessageToRatchet(currentConversation!, [newMessage])
-            requestIdleCallback(() => {
-              lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
-            })
-          }
+            cipherMessage: data.cipherMessage,
+            isBinary: data.isBinary
+          })
+        )
+        const newMessage = {
+          index: data.index,
+          content: content,
+          type: data.type,
+          sender: data.senderUsername
         }
+
+        setMessages([...messages, newMessage])
+        requestIdleCallback(() => {
+          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+        })
       }
+    }
   }, [websocket, messages])
 
   return (

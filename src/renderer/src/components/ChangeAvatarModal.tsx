@@ -1,5 +1,9 @@
 import { useRef, useState } from 'react'
 import { PenLine } from 'lucide-react'
+import userRepository from '../repositories/user-repository'
+import { toast } from 'react-toastify'
+import { IMAGE_URL } from '../configs/consts'
+import useAuthStore from '../stores/useAuthStore'
 
 type ChangeAvatarModalProps = {
   setIsOpen: (value: boolean) => void
@@ -8,6 +12,8 @@ type ChangeAvatarModalProps = {
 const ChangeAvatarModal = (props: ChangeAvatarModalProps) => {
   const { setIsOpen } = props
 
+  const { userInfo, setUserInfo } = useAuthStore()
+
   const inputRef = useRef<HTMLInputElement>(null)
   const [avatar, setAvatar] = useState('')
 
@@ -15,7 +21,21 @@ const ChangeAvatarModal = (props: ChangeAvatarModalProps) => {
     setAvatar(URL.createObjectURL(e.target.files[0]))
   }
 
-  const handleUploadAvatar = () => {}
+  const handleUploadAvatar = async () => {
+    try {
+      if (!inputRef.current?.files?.[0]) return
+
+      const formData = new FormData()
+      formData.append('upload', inputRef.current!.files[0])
+      const res = await userRepository.uploadAvatar(formData)
+      setIsOpen(false)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      setUserInfo({ ...userInfo, avatar: IMAGE_URL + res.data.filePath } as never)
+      toast.success('Cập nhật ảnh đại diện thành công')
+    } catch (error) {
+      console.error('ERROR', error)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-20">

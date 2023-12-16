@@ -1,12 +1,9 @@
 import MessageList from './MessageList'
 import MessageForm from './MessageForm'
 import MessageSearch from './MessageSearch'
-import useConversationStore from '../stores/useConversationStore'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 const Chat = () => {
-  const { currentRatchetId, currentConversation } = useConversationStore()
-
   const lastMessageRef = useRef<HTMLDivElement>(null)
 
   const handleScrollBottom = useCallback(() => {
@@ -18,16 +15,6 @@ const Chat = () => {
       lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
     })
   }
-
-  useEffect(() => {
-    return () => {
-      ;(async () => {
-        const ratchetDetail = await window.saveRatchet(currentRatchetId!)
-        console.log('ratchetDetail', ratchetDetail)
-        await window.api.changeRatchetDetail(currentConversation!, ratchetDetail)
-      })()
-    }
-  }, [currentRatchetId, currentConversation])
 
   return (
     <>

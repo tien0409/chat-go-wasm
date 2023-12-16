@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import * as fs from 'fs'
-import { AUTH_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
+import { AUTH_FILE, AVATAR_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
 import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
 import IMessage from '../renderer/src/interfaces/IMessage'
 
@@ -63,6 +63,9 @@ app.whenReady().then(() => {
   ipcMain.handle('r_getInternalKey', handleGetInternalKey)
   ipcMain.handle('r_existAuthFile', handleExistAuthFile)
   ipcMain.handle('r_createAuthFile', handleCreateAuthFile)
+
+  ipcMain.handle('r_updateAvatar', handleUpdateAvatar)
+  ipcMain.handle('r_getAvatar', handleGetAvatar)
 
   ipcMain.handle('r_createRatchetFile', handleCreateRatchetFile)
   ipcMain.handle('r_changeRatchetDetail', handleChangeRatchetDetail)
@@ -263,7 +266,7 @@ function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUser
 }
 
 function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUsername: string) {
-  const result: { receiver: string; ratchetId: string }[] = []
+  const result: { receiver: string; ratchetId: string; lastMessage: string }[] = []
   try {
     const chatFilenames = fs
       .readdirSync(process.cwd())
@@ -276,7 +279,10 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
       const content = fs.readFileSync(chatFilename, {
         encoding: 'utf8'
       })
+      const parsedContent = JSON.parse(content)
+
       result.push({
+        lastMessage: parsedContent?.messages?.[parsedContent.messages?.length - 1]?.content || '',
         receiver: chatFilename.replace(CHAT_PREFIX, '').replace('.json', ''),
         ratchetId: JSON.parse(content).ratchetId
       })
@@ -330,4 +336,28 @@ function handleGetMessagesByUsername(_e: Electron.IpcMainInvokeEvent, username: 
   } catch (error) {
     console.error('ERROR', error)
   }
+}
+
+function handleUpdateAvatar(_e: Electron.IpcMainInvokeEvent, avatar: string, filename) {
+  try {
+    fs.writeFileSync(filename, avatar, {
+      encoding: 'utf8'
+    })
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+function handleGetAvatar() {
+  try {
+    if (fs.existsSync(AVATAR_FILE)) {
+      return fs.readFileSync(AVATAR_FILE, {
+        encoding: 'utf8'
+      })
+    }
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+
+  return 'https://source.unsplash.com/RZrIJ8C0860'
 }

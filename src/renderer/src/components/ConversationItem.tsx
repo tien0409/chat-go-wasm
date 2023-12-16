@@ -24,9 +24,7 @@ const ConversationItem = (props: ConversationItemProps) => {
       ephemeralKey: initRatchetRes.ephemeralKey,
       receiverUserName: conversation.receiver
     })
-    console.log('initRatchetRes', initRatchetRes)
     const ratchetDetail = await window.saveRatchet(initRatchetRes.ratchetId)
-    console.log('ratchetDetail', ratchetDetail)
     await window.api.createRatchetFile(
       conversation.receiver,
       ratchetDetail,

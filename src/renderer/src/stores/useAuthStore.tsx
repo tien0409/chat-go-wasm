@@ -5,10 +5,13 @@ interface IAuthStore {
     id: string
     userName: string
     aliasName: string
+    avatar: string
   } | null
   authToken: string
   setAuthToken: (authToken: string) => void
-  setUserInfo: (userInfo: { id: string; userName: string; aliasName: string } | null) => void
+  setUserInfo: (
+    userInfo: { avatar: string; id: string; userName: string; aliasName: string } | null
+  ) => void
   signingIn: boolean
   setSigningIn: (signingIn: boolean) => void
   isAuth: boolean
@@ -19,8 +22,9 @@ const useAuthStore = create<IAuthStore>((set) => ({
   authToken: '',
   setAuthToken: (authToken: string) => set({ authToken }),
   userInfo: null,
-  setUserInfo: (userInfo: { userName: string; id: string; aliasName: string } | null) =>
-    set({ userInfo }),
+  setUserInfo: (
+    userInfo: { avatar: string; userName: string; id: string; aliasName: string } | null
+  ) => set({ userInfo }),
   signingIn: false,
   setSigningIn: (signingIn: boolean) => set({ signingIn }),
   isAuth: false,

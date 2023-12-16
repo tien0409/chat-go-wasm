@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { HOME_PAGE, SIGN_UP_PAGE } from '../configs/routes'
 import { toast } from 'react-toastify'
 import authRepository from '../repositories/auth-repository'
-import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import { ACCESS_TOKEN_KEY, AVATAR_DEFAULT, IMAGE_URL } from '../configs/consts'
 import useAuthStore from '../stores/useAuthStore'
 import axiosInstance from '../libs/axios'
 
@@ -29,6 +29,10 @@ const SignInScreen = () => {
         authRepository.getUserInfo(),
         authRepository.getAuthToken()
       ])
+
+      userInfoRes.data.avatar = userInfoRes.data.avatar
+        ? IMAGE_URL + userInfoRes.data.avatar
+        : AVATAR_DEFAULT
       setAuthToken(authToken.data.authToken)
       setUserInfo(userInfoRes.data)
       toast.success('Đăng nhập thành công')
@@ -80,4 +84,4 @@ const SignInScreen = () => {
   )
 }
 
-export default SignInScreen;
+export default SignInScreen

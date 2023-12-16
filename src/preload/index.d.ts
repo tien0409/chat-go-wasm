@@ -28,12 +28,15 @@ declare global {
       existAuthFile(): Promise<boolean>
       getInternalKey(): Promise<string>
 
+      updateAvatar(avatar: string, filename): Promise<void>
+      getAvatar(): Promise<string>
+
       createRatchetFile(username: string, ratchetDetail: IRatchetDetail, ratchetId: string): Promise<void>
       changeRatchetDetail(receiver: string, ratchetDetail: IRatchetDetail): Promise<void>
       writeRatchetFile(username: string, ratchetData: any): Promise<void>
       getRatchetId(username: string): Promise<string>
       getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>
-      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string}[]>
+      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string}[]>
       addMessageToRatchet(receiver: string, messages: IMessage[]): Promise<void>
       getMessagesByUsername(username: string): Promise<IMessage[]>
     }

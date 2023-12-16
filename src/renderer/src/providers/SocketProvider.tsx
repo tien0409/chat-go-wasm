@@ -9,6 +9,11 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (websocket || !authToken) return
     else initWebSocket()
+
+    return () => {
+      if (!websocket) return
+      ;(websocket as WebSocket)?.close()
+    }
   }, [websocket, initWebSocket, userInfo, authToken])
 
   return children

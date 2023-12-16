@@ -4,7 +4,7 @@ import useAuthStore from '../stores/useAuthStore'
 import SocketProvider from '../providers/SocketProvider'
 import { useNavigate } from 'react-router-dom'
 import { SIGN_IN_PAGE } from '../configs/routes'
-import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import { ACCESS_TOKEN_KEY, AVATAR_DEFAULT, IMAGE_URL } from '../configs/consts'
 import authRepository from '../repositories/auth-repository'
 import { Loader2 } from 'lucide-react'
 import IAuthFile from '../interfaces/IAuthFile'
@@ -47,6 +47,9 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
         ])
 
         setAuthToken(authToken.data.authToken)
+        userInfoRes.data.avatar = userInfoRes.data.avatar
+          ? IMAGE_URL + userInfoRes.data.avatar
+          : AVATAR_DEFAULT
         setUserInfo(userInfoRes.data)
         setIsAuth(true)
         setErrorMessage('')
