@@ -54,8 +54,12 @@ const MessageForm = (props: MessageFormProps) => {
 
     setMessages([...messages, newMessage])
 
-    const conversationIndex = conversations.findIndex((item) => item.id === currentConversation)
+    console.log('conversations', conversations)
+    const conversationIndex = conversations.findIndex(
+      (item) => item.receiver === currentConversation
+    )
     const newConversations = [...conversations]
+    console.log('conversationIndex', conversationIndex)
     newConversations[conversationIndex].lastMessage = value
     const temp = newConversations[conversationIndex]
     newConversations.splice(conversationIndex, 1)

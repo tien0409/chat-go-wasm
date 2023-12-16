@@ -26,55 +26,57 @@ const ConversationList = () => {
 
   useEffect(() => {
     if (!websocket) return
-    websocket.onmessage = (msg) => {
-      console.log('msg', msg)
-      const data = JSON.parse(msg.data)
-      if (data.type === CHAT_NEW_EVENT) {
-        const newConversation: IConversation = {
-          id: data.chatSessionId,
-          receiver: data.senderUsername,
-          lastMessage: ''
-        }
-        setConversations([newConversation, ...conversations])
-        if (data.plainMessage) toast.info(data.plainMessage)
-        createRatchet(data.senderUsername)
-      }
-    }
-
     websocket.onmessage = async (msg) => {
       console.log('msg', msg)
       const data = JSON.parse(msg.data)
-      if (data.type === MESSAGE_EVENT) {
-        const content = await window.receiveMessage(
-          JSON.stringify({
-            chatSessionId: data.chatSessionId,
-            index: data.index,
-            cipherMessage: data.cipherMessage,
-            isBinary: data.isBinary
-          })
-        )
-
-        const newMessage = {
-          index: data.index,
-          content: content,
-          type: data.type,
-          sender: data.senderUsername
+      switch (data.type) {
+        case CHAT_NEW_EVENT: {
+          const newConversation: IConversation = {
+            id: data.chatSessionId,
+            receiver: data.senderUsername,
+            lastMessage: ''
+          }
+          setConversations([newConversation, ...conversations])
+          if (data.plainMessage) toast.info(data.plainMessage)
+          createRatchet(data.senderUsername)
+          break
         }
 
-        await window.api.addMessageToRatchet(data.senderUsername!, [newMessage])
+        case MESSAGE_EVENT: {
+          const content = await window.receiveMessage(
+            JSON.stringify({
+              chatSessionId: data.chatSessionId,
+              index: data.index,
+              cipherMessage: data.cipherMessage,
+              isBinary: data.isBinary
+            })
+          )
 
-        const conversationIndex = conversations.findIndex((item) => item.id === data.chatSessionId)
-        const newConversations = [...conversations]
-        if (!newConversations[conversationIndex]) return
-        newConversations[conversationIndex].lastMessage = content
-        const temp = newConversations[conversationIndex]
-        newConversations.splice(conversationIndex, 1)
-        newConversations.unshift(temp)
-        setConversations(newConversations)
+          const newMessage = {
+            index: data.index,
+            content: content,
+            type: data.type,
+            sender: data.senderUsername
+          }
 
-        // save new ratchet detail
-        const ratchetDetail = await window.saveRatchet(data.chatSessionId!)
-        await window.api.changeRatchetDetail(data.senderUsername!, ratchetDetail)
+          await window.api.addMessageToRatchet(data.senderUsername!, [newMessage])
+
+          const conversationIndex = conversations.findIndex(
+            (item) => item.id === data.chatSessionId
+          )
+          const newConversations = [...conversations]
+          if (!newConversations[conversationIndex]) return
+          newConversations[conversationIndex].lastMessage = content
+          const temp = newConversations[conversationIndex]
+          newConversations.splice(conversationIndex, 1)
+          newConversations.unshift(temp)
+          setConversations(newConversations)
+
+          // save new ratchet detail
+          const ratchetDetail = await window.saveRatchet(data.chatSessionId!)
+          await window.api.changeRatchetDetail(data.senderUsername!, ratchetDetail)
+          break
+        }
       }
     }
   }, [websocket, conversations, createRatchet, conversations])
