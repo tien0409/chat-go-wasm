@@ -1,10 +1,10 @@
 import Input from './Input'
-import { Paperclip, SendHorizonal } from 'lucide-react'
+import { Image, Paperclip, SendHorizonal } from 'lucide-react'
 import { FormEvent, useRef, useState } from 'react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
-import { FILE_TYPE, TEXT_TYPE } from '../configs/consts'
+import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
 import uploadRepository from '../repositories/upload-repository'
 import { b64toBlob } from '../utils'
 
@@ -26,7 +26,8 @@ const MessageForm = (props: MessageFormProps) => {
   const { websocket } = useWebSocketStore()
   const { userInfo } = useAuthStore()
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const imageRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [content, setContent] = useState('')
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -71,10 +72,75 @@ const MessageForm = (props: MessageFormProps) => {
     handleScroll(value)
   }
 
+  const handleSendImage = async (e: FormEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files?.[0]
+    if (!file) return
+    const mimeType = file.type
+    const randomKey = await window.api.random32Bytes()
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const encryptedBase64 = await window.api.encryptblob(
+        e!.target!.result as ArrayBuffer,
+        randomKey,
+        mimeType
+      )
+      const encryptedBlob = b64toBlob(encryptedBase64, mimeType)
+
+      const formData = new FormData()
+      formData.set('upload', encryptedBlob)
+      const res = await uploadRepository.uploadFile(formData)
+      const chatType = mimeType.split('/')[0] === 'image' ? IMAGE_TYPE : VIDEO_TYPE
+      console.log("mimeType.split('/')[0]", mimeType.split('/')[0])
+      console.log('chatType', chatType)
+
+      const resMsg = await window.sendMessage(currentRatchetId!, true, randomKey)
+      websocket?.send(
+        JSON.stringify({
+          type: chatType,
+          senderUsername: userInfo?.userName,
+          plainMessage: res.data.filePath,
+          chatSessionId: currentRatchetId,
+          index: resMsg.index,
+          cipherMessage: resMsg.cipherMessage,
+          isBinary: true
+        })
+      )
+      const newMessage = {
+        index: resMsg.index,
+        content:
+          chatType === IMAGE_TYPE ? 'Người dùng đã gửi một ảnh' : 'Người dùng đã gửi một video',
+        filePath: randomKey + ':' + res.data.filePath + ':' + mimeType,
+        type: chatType,
+        sender: userInfo!.userName
+      }
+
+      await window.api.addMessageToRatchet(currentConversation!, [newMessage])
+
+      setMessages([...messages, newMessage])
+
+      const conversationIndex = conversations.findIndex(
+        (item) => item.receiver === currentConversation
+      )
+      const newConversations = [...conversations]
+      newConversations[conversationIndex].lastMessage =
+        chatType === IMAGE_TYPE ? 'Người dùng đã gửi một ảnh' : 'Người dùng đã gửi một video'
+      const temp = newConversations[conversationIndex]
+      newConversations.splice(conversationIndex, 1)
+      newConversations.unshift(temp)
+      setConversations(newConversations)
+
+      setContent('')
+      handleScroll(res.data.filePath)
+    }
+    reader.readAsArrayBuffer(file)
+  }
+
   const handleSendFile = async (e: FormEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0]
     if (!file) return
     const mimeType = file.type
+    const fileName = file.name
+    const fileSize = file.size
     const randomKey = await window.api.random32Bytes()
     const reader = new FileReader()
     reader.onload = async (e) => {
@@ -103,8 +169,17 @@ const MessageForm = (props: MessageFormProps) => {
       )
       const newMessage = {
         index: resMsg.index,
-        content: randomKey,
-        filePath: res.data.filePath + ':' + mimeType,
+        content: 'Người dùng đã gửi một tệp tin',
+        filePath:
+          randomKey +
+          ':' +
+          res.data.filePath +
+          ':' +
+          mimeType +
+          ':' +
+          fileName +
+          ':' +
+          fileSize / 1024,
         type: FILE_TYPE,
         sender: userInfo!.userName
       }
@@ -117,7 +192,7 @@ const MessageForm = (props: MessageFormProps) => {
         (item) => item.receiver === currentConversation
       )
       const newConversations = [...conversations]
-      newConversations[conversationIndex].lastMessage = file.name
+      newConversations[conversationIndex].lastMessage = 'Người dùng đã gửi một tệp tin'
       const temp = newConversations[conversationIndex]
       newConversations.splice(conversationIndex, 1)
       newConversations.unshift(temp)
@@ -138,11 +213,18 @@ const MessageForm = (props: MessageFormProps) => {
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      <input ref={inputRef} type="file" hidden onChange={handleSendFile} />
+      <input ref={imageRef} type="file" hidden onChange={handleSendImage} accept="image/*" />
+      <input ref={fileRef} type="file" hidden onChange={handleSendFile} accept="application/*" />
       <Paperclip
+        className="absolute -translate-y-1/2 top-1/2 right-[5.5rem] cursor-pointer"
+        onClick={() => {
+          fileRef.current?.click()
+        }}
+      />
+      <Image
         className="absolute -translate-y-1/2 top-1/2 right-14 cursor-pointer"
         onClick={() => {
-          inputRef.current?.click()
+          imageRef.current?.click()
         }}
       />
       <SendHorizonal className="absolute -translate-y-1/2 top-1/2 right-6 cursor-pointer" />

@@ -1,9 +1,9 @@
 import clsx from 'clsx'
-import { Trash } from 'lucide-react'
+import { File, Trash } from 'lucide-react'
 import IMessage from '../interfaces/IMessage'
 import { memo, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
-import { FILE_TYPE, TEXT_TYPE } from '../configs/consts'
+import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
 import { b64toBlob } from '../utils'
 import uploadRepository from '../repositories/upload-repository'
 
@@ -18,19 +18,26 @@ const MessageItem = (props: MessageItemProps) => {
   const [content, setContent] = useState(
     message.type === TEXT_TYPE ? message.content : 'loading...'
   )
+  const [filename, setFileName] = useState('')
+  const [fileSize, setFileSize] = useState(0)
 
   const isSender = message.sender === userInfo?.userName
 
   useEffect(() => {
-    if (message.type === FILE_TYPE && message.filePath) {
+    if (message.type !== TEXT_TYPE && message.filePath) {
       ;(async function () {
-        const [filePath, mimeType] = message.filePath!.split(':')
+        const [randomKey, filePath, mimeType, filename, fileSize] = message.filePath!.split(':')
         const res = await uploadRepository.downloadFile(filePath!)
         const arrBuffer = await res.data.arrayBuffer()
-        const imgB64 = await window.api.decryptblob(arrBuffer, message.content, mimeType)
+        const imgB64 = await window.api.decryptblob(arrBuffer, randomKey, mimeType)
         const blob = b64toBlob(imgB64, mimeType)
-        const url = window.URL.createObjectURL(blob)
+        const url = URL.createObjectURL(blob)
         setContent(url)
+
+        if (message.type === FILE_TYPE) {
+          setFileName(filename)
+          setFileSize(parseInt(fileSize))
+        }
       })()
     }
   }, [message])
@@ -49,10 +56,17 @@ const MessageItem = (props: MessageItemProps) => {
             isSender ? 'bg-[#2A5251] text-white' : 'bg-[#F3F2EE]'
           )}
         >
-          {message.type === TEXT_TYPE ? (
-            <p className="text-xs ">{content}</p>
-          ) : (
-            <img src={content} className="object-cover" />
+          {message.type === TEXT_TYPE && <p className="text-xs ">{content}</p>}
+          {message.type === IMAGE_TYPE && <img src={content} className="object-cover" />}
+          {message.type === VIDEO_TYPE && <video src={content} className="object-cover" controls />}
+          {message.type === FILE_TYPE && (
+            <a href={content} className="flex gap-x-4 max-w-[400px]">
+              <File size={40} />
+              <div className="flex flex-col">
+                <span>{filename}</span>
+                <span>{fileSize}Kb</span>
+              </div>
+            </a>
           )}
         </div>
 
