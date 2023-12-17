@@ -3,7 +3,6 @@ import { memo, MouseEvent, MutableRefObject, useEffect, useState } from 'react'
 import { MoveDown } from 'lucide-react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
-import { MESSAGE_EVENT } from '../configs/consts'
 
 type MessageListProps = {
   lastMessageRef: MutableRefObject<HTMLDivElement | null>
@@ -13,7 +12,7 @@ type MessageListProps = {
 const MessageList = (props: MessageListProps) => {
   const { lastMessageRef, handleScrollBottom } = props
 
-  const { messages, currentConversation, setMessages } = useConversationStore()
+  const { messages, chatAction, setChatAction } = useConversationStore()
   const { websocket } = useWebSocketStore()
 
   const [isBottom, setIsBottom] = useState(false)
@@ -33,32 +32,31 @@ const MessageList = (props: MessageListProps) => {
   }, [])
 
   useEffect(() => {
-    if (!websocket) return
-    websocket.onmessage = async (msg) => {
-      const data = JSON.parse(msg.data)
-      if (data.type === MESSAGE_EVENT && data.senderUsername === currentConversation) {
-        const content = await window.receiveMessage(
-          JSON.stringify({
-            chatSessionId: data.chatSessionId,
-            index: data.index,
-            cipherMessage: data.cipherMessage,
-            isBinary: data.isBinary
-          })
-        )
-        const newMessage = {
-          index: data.index,
-          content: content,
-          type: data.type,
-          sender: data.senderUsername
-        }
-
-        setMessages([...messages, newMessage])
-        requestIdleCallback(() => {
-          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
-        })
-      }
-    }
+    requestIdleCallback(() => {
+      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+    })
   }, [websocket, messages])
+
+  useEffect(() => {
+    switch (chatAction) {
+      case 'add': {
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+        setChatAction(null)
+        break
+      }
+      case 'update': {
+        setChatAction(null)
+        break
+      }
+      case 'delete': {
+        setChatAction(null)
+        break
+      }
+      default:
+        setChatAction(null)
+        break
+    }
+  }, [chatAction])
 
   return (
     <div

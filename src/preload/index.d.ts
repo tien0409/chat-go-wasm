@@ -1,6 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import IRatchetDetail from "../renderer/src/interfaces/IRatchetDetail";
 import IMessage from "../renderer/src/interfaces/IMessage";
+import { decryptblob } from "../renderer/src/crypto/cryptoLib";
 
 declare global {
   interface Window {
@@ -27,6 +28,10 @@ declare global {
       checkAuthFile(content: string): Promise<boolean>
       existAuthFile(): Promise<boolean>
       getInternalKey(): Promise<string>
+
+      random32Bytes(): Promise<string>
+      encryptblob(data: ArrayBuffer, randomKey: string, mimeType: string): Promise<string>
+      decryptblob(data: ArrayBuffer, randomKey: string, mimeType: string): Promise<string>
 
       updateAvatar(avatar: string, filename): Promise<void>
       getAvatar(): Promise<string>

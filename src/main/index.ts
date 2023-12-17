@@ -6,6 +6,8 @@ import * as fs from 'fs'
 import { AUTH_FILE, AVATAR_FILE, CHAT_PREFIX } from '../renderer/src/configs/consts'
 import IRatchetDetail from '../renderer/src/interfaces/IRatchetDetail'
 import IMessage from '../renderer/src/interfaces/IMessage'
+import { randomBytes } from 'crypto'
+import { decryptblob, encryptblob } from '../renderer/src/crypto/cryptoLib'
 
 function createWindow(): void {
   // Create the browser window.
@@ -66,6 +68,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('r_updateAvatar', handleUpdateAvatar)
   ipcMain.handle('r_getAvatar', handleGetAvatar)
+
+  ipcMain.handle('r_random32Bytes', handleGetRandom32Bytes)
+  ipcMain.handle('r_encryptblob', handleEncryptblob)
+  ipcMain.handle('r_decryptblob', handleDecryptblob)
 
   ipcMain.handle('r_createRatchetFile', handleCreateRatchetFile)
   ipcMain.handle('r_changeRatchetDetail', handleChangeRatchetDetail)
@@ -360,4 +366,42 @@ function handleGetAvatar() {
   }
 
   return 'https://source.unsplash.com/RZrIJ8C0860'
+}
+
+function handleGetRandom32Bytes() {
+  try {
+    const bytes = randomBytes(32)
+    return Buffer.from(bytes).toString('base64')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+async function handleEncryptblob(
+  _e: Electron.IpcMainInvokeEvent,
+  data: ArrayBuffer,
+  randomKey: string,
+  mimeType: string
+) {
+  try {
+    const res = await encryptblob(new Blob([data], { type: mimeType }), randomKey)
+    return Buffer.from(await res.arrayBuffer()).toString('base64')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+async function handleDecryptblob(
+  _e: Electron.IpcMainInvokeEvent,
+  data: ArrayBuffer,
+  randomKey: string,
+  mimeType: string
+) {
+  try {
+    const res = await decryptblob(new Blob([data], { type: mimeType }), randomKey)
+
+    return Buffer.from(await res.arrayBuffer()).toString('base64')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
 }

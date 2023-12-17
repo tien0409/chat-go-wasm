@@ -1,10 +1,12 @@
 import Input from './Input'
-import { SendHorizonal } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { Paperclip, SendHorizonal } from 'lucide-react'
+import { FormEvent, useRef, useState } from 'react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
-import { TEXT_TYPE } from '../configs/consts'
+import { FILE_TYPE, TEXT_TYPE } from '../configs/consts'
+import uploadRepository from '../repositories/upload-repository'
+import { b64toBlob } from '../utils'
 
 type MessageFormProps = {
   handleScroll: (content: string) => void
@@ -24,6 +26,7 @@ const MessageForm = (props: MessageFormProps) => {
   const { websocket } = useWebSocketStore()
   const { userInfo } = useAuthStore()
 
+  const inputRef = useRef<HTMLInputElement>(null)
   const [content, setContent] = useState('')
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -54,12 +57,10 @@ const MessageForm = (props: MessageFormProps) => {
 
     setMessages([...messages, newMessage])
 
-    console.log('conversations', conversations)
     const conversationIndex = conversations.findIndex(
       (item) => item.receiver === currentConversation
     )
     const newConversations = [...conversations]
-    console.log('conversationIndex', conversationIndex)
     newConversations[conversationIndex].lastMessage = value
     const temp = newConversations[conversationIndex]
     newConversations.splice(conversationIndex, 1)
@@ -70,16 +71,81 @@ const MessageForm = (props: MessageFormProps) => {
     handleScroll(value)
   }
 
+  const handleSendFile = async (e: FormEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files?.[0]
+    if (!file) return
+    const mimeType = file.type
+    const randomKey = await window.api.random32Bytes()
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const encryptedBase64 = await window.api.encryptblob(
+        e!.target!.result as ArrayBuffer,
+        randomKey,
+        mimeType
+      )
+      const encryptedBlob = b64toBlob(encryptedBase64, mimeType)
+
+      const formData = new FormData()
+      formData.set('upload', encryptedBlob)
+      const res = await uploadRepository.uploadFile(formData)
+
+      const resMsg = await window.sendMessage(currentRatchetId!, true, randomKey)
+      websocket?.send(
+        JSON.stringify({
+          type: FILE_TYPE,
+          senderUsername: userInfo?.userName,
+          plainMessage: res.data.filePath,
+          chatSessionId: currentRatchetId,
+          index: resMsg.index,
+          cipherMessage: resMsg.cipherMessage,
+          isBinary: true
+        })
+      )
+      const newMessage = {
+        index: resMsg.index,
+        content: randomKey,
+        filePath: res.data.filePath + ':' + mimeType,
+        type: FILE_TYPE,
+        sender: userInfo!.userName
+      }
+
+      await window.api.addMessageToRatchet(currentConversation!, [newMessage])
+
+      setMessages([...messages, newMessage])
+
+      const conversationIndex = conversations.findIndex(
+        (item) => item.receiver === currentConversation
+      )
+      const newConversations = [...conversations]
+      newConversations[conversationIndex].lastMessage = file.name
+      const temp = newConversations[conversationIndex]
+      newConversations.splice(conversationIndex, 1)
+      newConversations.unshift(temp)
+      setConversations(newConversations)
+
+      setContent('')
+      handleScroll(res.data.filePath)
+    }
+    reader.readAsDataURL(file)
+  }
+
   return (
     <form className="flex relative h-full px-4" onSubmit={handleSubmit}>
       <Input
         wrapperClass="h-full w-full"
-        inputClass="pr-12"
+        inputClass="pr-20"
         placeholder="Enter message..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      <SendHorizonal className="absolute -translate-y-1/2 top-1/2 right-6" />
+      <input ref={inputRef} type="file" hidden onChange={handleSendFile} />
+      <Paperclip
+        className="absolute -translate-y-1/2 top-1/2 right-14 cursor-pointer"
+        onClick={() => {
+          inputRef.current?.click()
+        }}
+      />
+      <SendHorizonal className="absolute -translate-y-1/2 top-1/2 right-6 cursor-pointer" />
 
       <button type="submit" hidden>
         submit

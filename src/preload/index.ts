@@ -15,6 +15,13 @@ const api = {
     ipcRenderer.invoke('r_updateAvatar', avatar, filename),
   getAvatar: () => ipcRenderer.invoke('r_getAvatar'),
 
+  random32Bytes: () => ipcRenderer.invoke('r_random32Bytes'),
+  encryptblob: (data: ArrayBuffer, randomKey: string, mimeType: string) =>
+    ipcRenderer.invoke('r_encryptblob', data, randomKey, mimeType),
+  decryptblob: (data: ArrayBuffer, randomKey: string, mimeType: string) => {
+    return ipcRenderer.invoke('r_decryptblob', data, randomKey, mimeType)
+  },
+
   createRatchetFile: (username: string, ratchetDetail: IRatchetDetail, ratchetId) =>
     ipcRenderer.invoke('r_createRatchetFile', username, ratchetDetail, ratchetId),
   changeRatchetDetail: (receiver: string, ratchetDetail: IRatchetDetail) =>

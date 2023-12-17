@@ -5,29 +5,34 @@ import { useCallback, useEffect } from 'react'
 import { CHAT_NEW_EVENT, MESSAGE_EVENT } from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
-import userRepository from '../repositories/user-repository'
 import chatRepository from '../repositories/chat-repository'
 
 const ConversationList = () => {
-  const { conversations, setConversations } = useConversationStore()
+  const {
+    setChatAction,
+    setMessages,
+    currentConversation,
+    messages,
+    conversations,
+    setConversations
+  } = useConversationStore()
   const { websocket } = useWebSocketStore()
 
-  const createRatchet = useCallback(async (receiver: string) => {
-    const res = await userRepository.getExternalUserKey(receiver)
-    const initRatchetRes = await window.initRatchetFromInternal(JSON.stringify(res.data))
-    await chatRepository.initChatSession({
-      chatSessionId: initRatchetRes.ratchetId,
-      ephemeralKey: initRatchetRes.ephemeralKey,
-      receiverUserName: receiver
-    })
-    const ratchetDetail = await window.saveRatchet(initRatchetRes.ratchetId)
-    await window.api.createRatchetFile(receiver, ratchetDetail, initRatchetRes.ratchetId)
+  // eslint-disable-next-line
+  const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
+    const ratchetRes = await window.initRatchetFromExternal(
+      JSON.stringify(additionalData.senderKeyBundle),
+      additionalData.ephemeralKey,
+      additionalData.chatSessionId
+    )
+    await chatRepository.completeChatSession(ratchetRes.ratchetId)
+    const ratchetDetail = await window.saveRatchet(ratchetRes.ratchetId)
+    await window.api.createRatchetFile(senderUserName, ratchetDetail, ratchetRes.ratchetId)
   }, [])
 
   useEffect(() => {
     if (!websocket) return
     websocket.onmessage = async (msg) => {
-      console.log('msg', msg)
       const data = JSON.parse(msg.data)
       switch (data.type) {
         case CHAT_NEW_EVENT: {
@@ -38,7 +43,7 @@ const ConversationList = () => {
           }
           setConversations([newConversation, ...conversations])
           if (data.plainMessage) toast.info(data.plainMessage)
-          createRatchet(data.senderUsername)
+          createRatchet(data.additionalData, data.senderUsername)
           break
         }
 
@@ -57,6 +62,11 @@ const ConversationList = () => {
             content: content,
             type: data.type,
             sender: data.senderUsername
+          }
+
+          if (data.senderUsername === currentConversation) {
+            setMessages([...messages, newMessage])
+            setChatAction('add')
           }
 
           await window.api.addMessageToRatchet(data.senderUsername!, [newMessage])
@@ -79,7 +89,7 @@ const ConversationList = () => {
         }
       }
     }
-  }, [websocket, conversations, createRatchet, conversations])
+  }, [websocket, conversations, createRatchet, messages, setMessages])
 
   return (
     <div className="w-full h-full overflow-y-auto custom__scroll">

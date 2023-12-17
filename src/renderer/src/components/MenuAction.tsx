@@ -18,16 +18,16 @@ const MenuAction = (props: MenuActionProps) => {
 
   const navigate = useNavigate()
   const { websocket } = useWebSocketStore()
-  const { userInfo } = useAuthStore()
+  const { userInfo, setAuthToken } = useAuthStore()
 
   const [isOpenChangeAvatar, setIsOpenChangeAvatar] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
+    setAuthToken('')
     websocket!.close()
     navigate(SIGN_IN_PAGE)
   }
-  console.log('avatar', userInfo)
 
   return (
     <div

@@ -1,8 +1,11 @@
 import clsx from 'clsx'
 import { Trash } from 'lucide-react'
 import IMessage from '../interfaces/IMessage'
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
+import { FILE_TYPE, TEXT_TYPE } from '../configs/consts'
+import { b64toBlob } from '../utils'
+import uploadRepository from '../repositories/upload-repository'
 
 type MessageItemProps = {
   message: IMessage
@@ -12,8 +15,25 @@ const MessageItem = (props: MessageItemProps) => {
   const { message } = props
 
   const { userInfo } = useAuthStore()
+  const [content, setContent] = useState(
+    message.type === TEXT_TYPE ? message.content : 'loading...'
+  )
 
   const isSender = message.sender === userInfo?.userName
+
+  useEffect(() => {
+    if (message.type === FILE_TYPE && message.filePath) {
+      ;(async function () {
+        const [filePath, mimeType] = message.filePath!.split(':')
+        const res = await uploadRepository.downloadFile(filePath!)
+        const arrBuffer = await res.data.arrayBuffer()
+        const imgB64 = await window.api.decryptblob(arrBuffer, message.content, mimeType)
+        const blob = b64toBlob(imgB64, mimeType)
+        const url = window.URL.createObjectURL(blob)
+        setContent(url)
+      })()
+    }
+  }, [message])
 
   return (
     <div className={clsx('flex gap-x-3 group', isSender ? 'flex-row-reverse' : 'items-start')}>
@@ -29,7 +49,11 @@ const MessageItem = (props: MessageItemProps) => {
             isSender ? 'bg-[#2A5251] text-white' : 'bg-[#F3F2EE]'
           )}
         >
-          <p className="text-xs ">{message.content}</p>
+          {message.type === TEXT_TYPE ? (
+            <p className="text-xs ">{content}</p>
+          ) : (
+            <img src={content} className="object-cover" />
+          )}
         </div>
 
         <div className="opacity-0 group-hover:opacity-100 duration-200">
@@ -40,4 +64,4 @@ const MessageItem = (props: MessageItemProps) => {
   )
 }
 
-export default memo(MessageItem);
+export default memo(MessageItem)

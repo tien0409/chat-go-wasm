@@ -5,6 +5,7 @@ import { SOCKET_URL } from '../configs/consts'
 interface ISocketStoreType {
   websocket: WebSocket | null
   initWebSocket: () => void
+  removeSocket: () => void
 }
 
 const useWebSocketStore = create<ISocketStoreType>((setState, getState) => ({
@@ -24,6 +25,12 @@ const useWebSocketStore = create<ISocketStoreType>((setState, getState) => ({
       }
 
       setState({ websocket: _websocket })
+    }
+  },
+  removeSocket: () => {
+    if (getState().websocket) {
+      getState().websocket!.close()
+      setState({ websocket: null })
     }
   }
 }))

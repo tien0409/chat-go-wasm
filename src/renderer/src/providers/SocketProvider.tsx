@@ -3,18 +3,19 @@ import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
 
 const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const { userInfo, authToken } = useAuthStore()
-  const { websocket, initWebSocket } = useWebSocketStore()
+  const { authToken } = useAuthStore()
+  const { websocket, initWebSocket, removeSocket } = useWebSocketStore()
 
   useEffect(() => {
+    console.log('websocket, authToken', websocket, authToken)
     if (websocket || !authToken) return
     else initWebSocket()
 
     return () => {
       if (!websocket) return
-      ;(websocket as WebSocket)?.close()
+      removeSocket()
     }
-  }, [websocket, initWebSocket, userInfo, authToken])
+  }, [websocket, initWebSocket, authToken, removeSocket])
 
   return children
 }

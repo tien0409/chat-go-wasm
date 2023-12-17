@@ -3,6 +3,8 @@ import IMessage from '../interfaces/IMessage'
 import IConversation from '../interfaces/IConversation'
 
 type IConversationStore = {
+  chatAction: 'add' | 'update' | 'delete' | null
+  setChatAction: (action: 'add' | 'update' | 'delete' | null) => void
   currentRatchetId: string | null
   setCurrentRatchetId: (id: string | null) => void
   conversations: IConversation[]
@@ -14,6 +16,8 @@ type IConversationStore = {
 }
 
 const useConversationStore = create<IConversationStore>((set) => ({
+  chatAction: null,
+  setChatAction: (action) => set({ chatAction: action }),
   currentRatchetId: null,
   setCurrentRatchetId: (id) => set({ currentRatchetId: id }),
   conversations: [],

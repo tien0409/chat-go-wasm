@@ -92,7 +92,7 @@ const HomeScreen = () => {
         )}
       >
         {currentConversation ? (
-          <Chat key={currentConversation} />
+          <Chat />
         ) : (
           <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 text-center">
             <h1 className="text-2xl font-bold">Welcome to Chat App</h1>

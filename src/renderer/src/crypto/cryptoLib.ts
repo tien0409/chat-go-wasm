@@ -1,9 +1,9 @@
+import crypto from 'crypto'
+
 const algorithm = {
   name: 'AES-CBC',
   iv: new Uint8Array(16)
 }
-
-const bcrypt = require('bcrypt')
 
 function base64ToArrayBuffer(base64) {
   const binaryString = atob(base64)
