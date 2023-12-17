@@ -126,7 +126,7 @@ const MessageForm = (props: MessageFormProps) => {
       setContent('')
       handleScroll(res.data.filePath)
     }
-    reader.readAsDataURL(file)
+    reader.readAsArrayBuffer(file)
   }
 
   return (
