@@ -40,22 +40,30 @@ const ConversationItem = (props: ConversationItemProps) => {
       const res = await chatRepository.getPendingChatMessage(conversation.id)
 
       let ratchetId = await window.api.getRatchetId(conversation.receiver)
+      let isNewConversation = false
 
       if (ratchetId) {
         const isExist = await window.isRatchetExist(ratchetId)
 
         if (!isExist) {
           ratchetId = await createRatchet()
+          isNewConversation = true
         }
       } else {
         ratchetId = await createRatchet()
+        isNewConversation = true
       }
 
-      const newMessages: IMessage[] = oldMessages.map((item) => ({
-        content: item.content,
-        index: item.index,
-        sender: item.sender
-      }))
+      const newMessages: IMessage[] = oldMessages.map(
+        (item) =>
+          ({
+            content: item.content,
+            index: item.index,
+            sender: item.sender,
+            filePath: item.filePath,
+            type: item.type
+          }) as IMessage
+      )
       for (let i = 0; i < res?.data?.length; i++) {
         const item = res.data[i]
         const content = await window.receiveMessage(
@@ -70,10 +78,13 @@ const ConversationItem = (props: ConversationItemProps) => {
         newMessages.push({
           content,
           index: item.index,
-          sender: item.senderUsername
+          sender: item.senderUsername,
+          type: item.type,
+          filePath: item.filePath
         })
       }
-      await window.api.addMessageToRatchet(conversation.receiver, newMessages)
+      isNewConversation &&
+        (await window.api.addMessageToRatchet(conversation.receiver, newMessages))
 
       setMessages(newMessages)
       setCurrentRatchetId(ratchetId)

@@ -10,6 +10,8 @@ export const AUTH_FILE = 'auth2.json'
 export const AVATAR_FILE = 'avatar'
 
 export const TEXT_TYPE = 'CHAT_TEXT' as const
+export const IMAGE_TYPE = 'CHAT_IMAGE' as const
+export const VIDEO_TYPE = 'CHAT_VIDEO' as const
 export const FILE_TYPE = 'CHAT_FILE' as const
 
 export const MESSAGE_EVENT = 'CHAT_TEXT'

@@ -7,8 +7,7 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
   const { websocket, initWebSocket, removeSocket } = useWebSocketStore()
 
   useEffect(() => {
-    console.log('websocket, authToken', websocket, authToken)
-    if (websocket || !authToken) return
+    if ((websocket && websocket.readyState !== websocket.CLOSED) || !authToken) return
     else initWebSocket()
 
     return () => {
