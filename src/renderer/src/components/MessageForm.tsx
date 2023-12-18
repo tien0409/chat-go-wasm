@@ -6,7 +6,7 @@ import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
 import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
 import uploadRepository from '../repositories/upload-repository'
-import { b64toBlob } from '../utils'
+import { encryptblobBrowser } from '../crypto/cryptoLib'
 
 type MessageFormProps = {
   handleScroll: (content: string) => void
@@ -79,12 +79,10 @@ const MessageForm = (props: MessageFormProps) => {
     const randomKey = await window.api.random32Bytes()
     const reader = new FileReader()
     reader.onload = async (e) => {
-      const encryptedBase64 = await window.api.encryptblob(
-        e!.target!.result as ArrayBuffer,
-        randomKey,
-        mimeType
+      const encryptedBlob = await encryptblobBrowser(
+        new Blob([e!.target!.result as ArrayBuffer]),
+        randomKey
       )
-      const encryptedBlob = b64toBlob(encryptedBase64, mimeType)
 
       const formData = new FormData()
       formData.set('upload', encryptedBlob)
@@ -144,12 +142,10 @@ const MessageForm = (props: MessageFormProps) => {
     const randomKey = await window.api.random32Bytes()
     const reader = new FileReader()
     reader.onload = async (e) => {
-      const encryptedBase64 = await window.api.encryptblob(
-        e!.target!.result as ArrayBuffer,
-        randomKey,
-        mimeType
+      const encryptedBlob = await encryptblobBrowser(
+        new Blob([e!.target!.result as ArrayBuffer]),
+        randomKey
       )
-      const encryptedBlob = b64toBlob(encryptedBase64, mimeType)
 
       const formData = new FormData()
       formData.set('upload', encryptedBlob)
@@ -213,7 +209,13 @@ const MessageForm = (props: MessageFormProps) => {
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      <input ref={imageRef} type="file" hidden onChange={handleSendImage} accept="image/*" />
+      <input
+        ref={imageRef}
+        type="file"
+        hidden
+        onChange={handleSendImage}
+        accept="image/*,video/*"
+      />
       <input ref={fileRef} type="file" hidden onChange={handleSendFile} accept="application/*" />
       <Paperclip
         className="absolute -translate-y-1/2 top-1/2 right-[5.5rem] cursor-pointer"

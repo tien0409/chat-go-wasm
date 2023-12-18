@@ -7,7 +7,7 @@ import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
-  const VOIP_TOKEN = 'YSgn29x5lUEX-rbJSxYTPufmbnGyNJIPOb6MoTpWsRs'
+  const VOIP_TOKEN = 'LbqxmXO6ardFW_xPMOaUjUObwnGWAE9gGU0Vm2cb9Ks'
   const ENCRYPT_KEY = 'e/cyuqcGcTgF5Q2VzB1iTw=='
   const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
 
