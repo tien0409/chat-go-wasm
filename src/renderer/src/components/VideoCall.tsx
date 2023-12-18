@@ -2,20 +2,21 @@ import clsx from 'clsx'
 import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
-import { decryptblob, encryptblob } from '../crypto/cryptoLib'
+import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
 
 const VideoCall = () => {
   const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
 
-  const voipToken = 'dphLydZNbPojjvtwp1CaKnOvhdSPlFkjymUCRcBIVHY'
+  const VOIP_TOKEN = 'YSgn29x5lUEX-rbJSxYTPufmbnGyNJIPOb6MoTpWsRs'
+  const ENCRYPT_KEY = 'e/cyuqcGcTgF5Q2VzB1iTw=='
   const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
 
   const senderWs = new WebSocket(
-    requestTemplate.replace('{{voipToken}}', voipToken).replace('{{connType}}', 'FROM_CALLER')
+    requestTemplate.replace('{{voipToken}}', VOIP_TOKEN).replace('{{connType}}', 'FROM_CALLER')
   )
 
   const recieverWs = new WebSocket(
-    requestTemplate.replace('{{voipToken}}', voipToken).replace('{{connType}}', 'FROM_RECIEVER')
+    requestTemplate.replace('{{voipToken}}', VOIP_TOKEN).replace('{{connType}}', 'FROM_RECIEVER')
   )
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
@@ -38,123 +39,97 @@ const VideoCall = () => {
   const remoteArrayBuffer: ArrayBuffer[] = []
   let remoteSrcBuffer: SourceBuffer
 
-  // useEffect(() => {
-  //   senderWs.onopen = () => {
-  //     console.log('SenderVOIP Connected')
-  //   }
-  //   recieverWs.onopen = () => {
-  //     console.log('RecieverVOIP VOIP Connected')
-  //   }
-  //
-  //   // LOCAL setup
-  //   All_mediaDevices.getUserMedia({
-  //     audio: false,
-  //     video: true
-  //   })
-  //     .then(function (vidStream) {
-  //       if (localRecorder == null) {
-  //         localRecorder = new MediaRecorder(vidStream, {
-  //           mimeType: 'video/webm; codecs="opus,vp8"'
-  //         })
-  //         localRecorder.ondataavailable = (event) => {
-  //           encryptblob(event.data, 'T0EbQiT1V69ddZ8YUeVSzQ==').then((ecryptedData) => {
-  //             senderWs.send(ecryptedData)
-  //           })
-  //         }
-  //         localRecorder.start(100)
-  //       }
-  //       const video = localVideoRef.current
-  //       if (video != null) {
-  //         video.muted = true
-  //         video.srcObject = vidStream
-  //         video.onloadedmetadata = function () {
-  //           video.play()
-  //         }
-  //       }
-  //     })
-  //     .catch(function (e) {
-  //       console.log(e.name + ': ' + e.message)
-  //     })
-  //
-  //   // REMOTE setup
-  //   remoteMediaSource.addEventListener('sourceopen', () => {
-  //     if (
-  //       !remoteMediaSource.readyState.localeCompare('open') &&
-  //       remoteMediaSource.sourceBuffers.length == 0
-  //     ) {
-  //       remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
-  //       remoteSrcBuffer.addEventListener('updateend', () => {
-  //         if (remoteVideoRef.current != null) {
-  //           remoteVideoRef.current.play()
-  //         }
-  //       })
-  //     }
-  //   })
-  //
-  //   // WS handler
-  //   if (remoteVideoRef.current != null) {
-  //     remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
-  //   }
-  //   recieverWs.onmessage = (msg) => {
-  //     decryptblob(msg.data, 'T0EbQiT1V69ddZ8YUeVSzQ==').then((blob) => {
-  //       blob
-  //         .slice(0, blob.size)
-  //         .arrayBuffer()
-  //         .then((data) => {
-  //           remoteArrayBuffer.push(data)
-  //           if (
-  //             remoteMediaSource.readyState === 'open' &&
-  //             remoteSrcBuffer &&
-  //             remoteSrcBuffer.updating === false
-  //           ) {
-  //             const blob = remoteArrayBuffer.shift()
-  //             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //             // @ts-ignore
-  //             remoteSrcBuffer.appendBuffer(blob)
-  //             if (remoteVideoRef.current != null) {
-  //               if (
-  //                 remoteVideoRef.current.buffered.length &&
-  //                 remoteVideoRef.current.buffered.end(0) -
-  //                   remoteVideoRef.current.buffered.start(0) >
-  //                   400
-  //               ) {
-  //                 remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 400)
-  //               }
-  //             }
-  //           }
-  //         })
-  //     })
-  //
-  //     /*const blob = new Blob([msg.data], {
-  //       type: 'video/webm; codecs="opus,vp8"'
-  //     })
-  //     blob
-  //       .slice(0, blob.size)
-  //       .arrayBuffer()
-  //       .then((data) => {
-  //         remoteArrayBuffer.push(data)
-  //         if (
-  //           remoteMediaSource.readyState === 'open' &&
-  //           remoteSrcBuffer &&
-  //           remoteSrcBuffer.updating === false
-  //         ) {
-  //           const blob = remoteArrayBuffer.shift()
-  //           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //           // @ts-ignore
-  //           remoteSrcBuffer.appendBuffer(blob)
-  //           if (remoteVideoRef.current != null) {
-  //             if (
-  //               remoteVideoRef.current.buffered.length &&
-  //               remoteVideoRef.current.buffered.end(0) - remoteVideoRef.current.buffered.start(0) >
-  //                 400
-  //             ) {
-  //               remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 400)
-  //             }
-  //           }
-  //         }
-  //       })*/
-  //   }
-  // }, [])
+  useEffect(() => {
+    senderWs.onopen = () => {
+      console.log('SenderVOIP Connected')
+    }
+    recieverWs.onopen = () => {
+      console.log('RecieverVOIP VOIP Connected')
+    }
+
+    // LOCAL setup
+    All_mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    })
+      .then(function (vidStream) {
+        if (localRecorder == null) {
+          localRecorder = new MediaRecorder(vidStream, {
+            mimeType: 'video/webm; codecs="opus,vp8"'
+          })
+          localRecorder.ondataavailable = (event) => {
+            encryptblobBrowser(event.data, ENCRYPT_KEY).then((result) => {
+              senderWs.send(result)
+            })
+          }
+          localRecorder.start(100)
+        }
+        const video = localVideoRef.current
+        if (video != null) {
+          video.muted = true
+          video.srcObject = vidStream
+          video.onloadedmetadata = function () {
+            video.play()
+          }
+        }
+      })
+      .catch(function (e) {
+        console.log(e.name + ': ' + e.message)
+      })
+
+    // REMOTE setup
+    remoteMediaSource.addEventListener('sourceopen', () => {
+      if (
+        !remoteMediaSource.readyState.localeCompare('open') &&
+        remoteMediaSource.sourceBuffers.length == 0
+      ) {
+        remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
+        remoteSrcBuffer.addEventListener('updateend', () => {
+          if (remoteVideoRef.current != null) {
+            remoteVideoRef.current.play()
+          }
+        })
+      }
+    })
+
+    // WS handler
+    if (remoteVideoRef.current != null) {
+      remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
+    }
+    recieverWs.onmessage = (msg) => {
+      const blob = new Blob([msg.data], {
+        type: 'video/webm; codecs="opus,vp8"'
+      })
+      decryptblobBrowser(blob, ENCRYPT_KEY).then((result) => {
+        result
+          .slice(0, result.size)
+          .arrayBuffer()
+          .then((data) => {
+            remoteArrayBuffer.push(data)
+            if (
+              remoteMediaSource.readyState === 'open' &&
+              remoteSrcBuffer &&
+              remoteSrcBuffer.updating === false
+            ) {
+              const blob = remoteArrayBuffer.shift()
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              remoteSrcBuffer.appendBuffer(blob)
+              if (remoteVideoRef.current != null) {
+                if (
+                  remoteVideoRef.current.buffered.length &&
+                  remoteVideoRef.current.buffered.end(0) -
+                    remoteVideoRef.current.buffered.start(0) >
+                    400
+                ) {
+                  remoteSrcBuffer.remove(0, remoteVideoRef.current.buffered.end(0) - 400)
+                }
+              }
+            }
+          })
+      })
+    }
+  }, [])
 
   return (
     <div className="flex items-center justify-center h-full w-full">
