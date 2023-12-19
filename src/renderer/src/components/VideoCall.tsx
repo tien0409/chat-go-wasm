@@ -3,12 +3,12 @@ import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from '
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
+import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
 
 const VideoCall = () => {
   const { enableVideo, enableAudio, myWS, setEnableVideo, setEnableAudio, turnOffCall } =
     useCallStore()
 
-  // const VOIP_TOKEN = 'LbqxmXO6ardFW_xPMOaUjUObwnGWAE9gGU0Vm2cb9Ks'
   const ENCRYPT_KEY = 'e/cyuqcGcTgF5Q2VzB1iTw=='
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
@@ -34,6 +34,8 @@ const VideoCall = () => {
   useEffect(() => {
     if (!myWS) return
 
+    const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
+
     // LOCAL setup
     All_mediaDevices.getUserMedia({
       audio: enableAudio,
@@ -41,10 +43,11 @@ const VideoCall = () => {
     })
       .then(function (vidStream) {
         if (localRecorder == null) {
-          localRecorder = new MediaRecorder(vidStream, {})
+          localRecorder = new MediaRecorder(vidStream, {
+            mimeType: mimeType
+          })
           localRecorder.ondataavailable = (event) => {
             encryptblobBrowser(event.data, ENCRYPT_KEY).then((result) => {
-              console.log('result', result)
               myWS.send(result)
             })
           }
@@ -69,7 +72,7 @@ const VideoCall = () => {
         !remoteMediaSource.readyState.localeCompare('open') &&
         remoteMediaSource.sourceBuffers.length == 0
       ) {
-        remoteSrcBuffer = remoteMediaSource.addSourceBuffer('video/webm; codecs="opus,vp8"')
+        remoteSrcBuffer = remoteMediaSource.addSourceBuffer(mimeType)
         remoteSrcBuffer.addEventListener('updateend', () => {
           if (remoteVideoRef.current != null) {
             remoteVideoRef.current.play()
@@ -83,9 +86,8 @@ const VideoCall = () => {
       remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     }
     myWS.onmessage = (msg) => {
-      console.log('msg', msg)
       const blob = new Blob([msg.data], {
-        type: 'video/webm; codecs="opus,vp8"'
+        type: mimeType
       })
       decryptblobBrowser(blob, ENCRYPT_KEY).then((result) => {
         result

@@ -17,11 +17,11 @@ const useWebSocketStore = create<ISocketStoreType>((setState, getState) => ({
       const _websocket = new WebSocket(WEB_SOCKET_URL)
 
       _websocket.onopen = () => {
-        console.log('connect rồi dm Luyện Đồng')
+        console.log('main ws connected')
       }
 
       _websocket.onclose = () => {
-        console.log('disconnected rồi dm Luyện Đồng')
+        console.log('main ws disconnected')
       }
 
       setState({ websocket: _websocket })

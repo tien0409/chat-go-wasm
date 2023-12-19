@@ -5,7 +5,7 @@ type CallStatus = 'calling' | 'receiving-call' | 'on-call' | 'idle'
 
 type IVideoCallStore = {
   myWS: WebSocket | null
-  initWS: (type: 'FROM_CALLER' | 'FROM_SENDER') => void
+  initWS: (type: 'FROM_CALLER' | 'FROM_RECIEVER') => void
   voipToken: string | null
   setVoipToken: (value: string | null) => void
   status: CallStatus
@@ -18,12 +18,14 @@ type IVideoCallStore = {
   setEnableVideo: (value: boolean) => void
   enableAudio: boolean
   setEnableAudio: (value: boolean) => void
+  encKey: string | null
+  setEncKey: (value: string | null) => void
   turnOffCall: () => void
 }
 
 const useCallStore = create<IVideoCallStore>((set, getState) => ({
   myWS: null,
-  initWS: (type: 'FROM_CALLER' | 'FROM_SENDER') => {
+  initWS: (type: 'FROM_CALLER' | 'FROM_RECIEVER') => {
     console.log('type', type)
     console.log('get()', getState())
     const ws = new WebSocket(
@@ -47,6 +49,8 @@ const useCallStore = create<IVideoCallStore>((set, getState) => ({
   setEnableAudio: (value: boolean) => set(() => ({ enableAudio: value })),
   enableVideo: false,
   setEnableVideo: (value: boolean) => set(() => ({ enableVideo: value })),
+  encKey: null,
+  setEncKey: (value: string | null) => set(() => ({ encKey: value })),
   turnOffCall: () => set(() => ({ typeCall: null, enableAudio: false, enableVideo: false }))
 }))
 

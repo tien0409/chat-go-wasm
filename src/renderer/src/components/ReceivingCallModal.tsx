@@ -30,7 +30,7 @@ const ReceivingCallModal = () => {
     setStatus('on-call')
     setEnableAudio(typeCall === 'audio')
     setEnableVideo(typeCall === 'video')
-    initWS('FROM_SENDER')
+    initWS('FROM_RECIEVER')
   }
 
   const handleReject = () => {
