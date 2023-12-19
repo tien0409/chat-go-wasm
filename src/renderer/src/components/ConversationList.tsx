@@ -2,10 +2,17 @@ import ConversationItem from './ConversationItem'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import { useCallback, useEffect } from 'react'
-import { CHAT_NEW_EVENT, MESSAGE_EVENT } from '../configs/consts'
+import {
+  ACCEPT_CALL_EVENT,
+  CHAT_AUDIO_EVENT,
+  CHAT_NEW_EVENT,
+  CHAT_VIDEO_EVENT,
+  MESSAGE_EVENT
+} from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
 import chatRepository from '../repositories/chat-repository'
+import useCallStore from '../stores/useCallStore'
 
 const ConversationList = () => {
   const {
@@ -17,6 +24,7 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
+  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken } = useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -33,7 +41,9 @@ const ConversationList = () => {
   useEffect(() => {
     if (!websocket) return
     websocket.onmessage = async (msg) => {
+      console.log('msg', msg)
       const data = JSON.parse(msg.data)
+      console.log('data', data)
       switch (data.type) {
         case CHAT_NEW_EVENT: {
           const newConversation: IConversation = {
@@ -85,6 +95,29 @@ const ConversationList = () => {
           // save new ratchet detail
           const ratchetDetail = await window.saveRatchet(data.chatSessionId!)
           await window.api.changeRatchetDetail(data.senderUsername!, ratchetDetail)
+          break
+        }
+
+        case CHAT_AUDIO_EVENT: {
+          setStatus('receiving-call')
+          setTypeCall('audio')
+          setCaller(data.senderUsername)
+          setVoipToken(data.cipherMessage)
+          break
+        }
+
+        case CHAT_VIDEO_EVENT: {
+          setStatus('receiving-call')
+          setTypeCall('video')
+          setCaller(data.senderUsername)
+          setVoipToken(data.cipherMessage)
+          break
+        }
+
+        // caller
+        case ACCEPT_CALL_EVENT: {
+          setStatus('on-call')
+          initWS('FROM_CALLER')
           break
         }
       }
