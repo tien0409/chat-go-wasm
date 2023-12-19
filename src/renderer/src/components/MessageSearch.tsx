@@ -4,6 +4,8 @@ import { FormEvent, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
 import useConversationStore from '../stores/useConversationStore'
+import { CHAT_AUDIO_EVENT } from '../configs/consts'
+import callRepository from '../repositories/call-repository'
 
 const MessageSearch = () => {
   const { typeCall, setTypeCall } = useCallStore()
@@ -15,8 +17,14 @@ const MessageSearch = () => {
     e.preventDefault()
   }
 
-  const handleCall = () => {
-    setTypeCall('audio')
+  const handleCall = async () => {
+    try {
+      const res = await callRepository.initVOIP(currentConversation!, CHAT_AUDIO_EVENT)
+      console.log('res', res)
+      setTypeCall('audio')
+    } catch (error) {
+      console.error('ERROR', error)
+    }
   }
 
   const handleVideoCall = () => {
@@ -66,4 +74,4 @@ const MessageSearch = () => {
   )
 }
 
-export default MessageSearch;
+export default MessageSearch

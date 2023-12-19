@@ -3,6 +3,7 @@ import { memo, MouseEvent, MutableRefObject, useEffect, useState } from 'react'
 import { MoveDown } from 'lucide-react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
+import ReceivingCallModal from './ReceivingCallModal'
 
 type MessageListProps = {
   lastMessageRef: MutableRefObject<HTMLDivElement | null>
@@ -60,9 +61,11 @@ const MessageList = (props: MessageListProps) => {
 
   return (
     <div
-      className="h-full overflow-y-auto custom__scroll px-4 flex flex-col gap-4"
+      className="h-full overflow-y-auto custom__scroll px-4 flex flex-col gap-4 relative"
       onScroll={handleScroll}
     >
+      {/*<ReceivingCallModal setCallModal={} />*/}
+
       {messages.map((message, index) => (
         <MessageItem message={message} key={index} />
       ))}
