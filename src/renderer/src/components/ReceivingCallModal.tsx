@@ -1,39 +1,80 @@
-import { AVATAR_DEFAULT } from '../configs/consts'
+import { ACCEPT_CALL_EVENT, AVATAR_DEFAULT } from '../configs/consts'
 import useCallStore from '../stores/useCallStore'
 import { Phone, X } from 'lucide-react'
+import useAuthStore from '../stores/useAuthStore'
+import useWebSocketStore from '../stores/useWebSocketStore'
 
-type ReceivingCallModalProps = {
-  setCallModal: (value: boolean) => void
-}
+const ReceivingCallModal = () => {
+  const {
+    status,
+    setEnableAudio,
+    setEnableVideo,
+    caller,
+    setStatus,
+    typeCall,
+    setTypeCall,
+    setCaller,
+    initWS
+  } = useCallStore()
+  const { userInfo } = useAuthStore()
+  const { websocket } = useWebSocketStore()
 
-const ReceivingCallModal = (props: ReceivingCallModalProps) => {
-  const { setCallModal } = props
+  const handleAccept = () => {
+    websocket!.send(
+      JSON.stringify({
+        type: ACCEPT_CALL_EVENT,
+        plainMessage: caller,
+        senderUsername: userInfo?.userName
+      })
+    )
+    setEnableAudio(typeCall === 'audio')
+    setEnableVideo(typeCall === 'video')
+    initWS('FROM_SENDER')
+  }
 
-  const { typeCall } = useCallStore()
+  const handleReject = () => {
+    setStatus('idle')
+    setTypeCall(null)
+    setCaller(null)
+  }
 
   return (
-    <div className="absolute inset-0">
-      <span className="absolute inset-0 bg-black/30" onClick={() => setCallModal(false)}></span>
-      <div className="relative top-20 left-1/2 -translate-x-1/2">
-        <div>
-          <img src={AVATAR_DEFAULT} />
+    status !== 'idle' && (
+      <div className="absolute inset-0">
+        <span
+          className="absolute inset-0 bg-black/50"
+          onClick={() => {
+            setCaller(null)
+            setTypeCall(null)
+          }}
+        ></span>
+        <div className="relative w-80 bg-white py-4 px-8 rounded-lg overflow-hidden top-36 left-1/2 -translate-x-1/2">
+          <div className="flex justify-center mb-3">
+            <img className="w-14 rounded-full h-14" src={AVATAR_DEFAULT} />
+          </div>
+          {caller === userInfo!.userName ? (
+            <div>I'm caller</div>
+          ) : (
+            <>
+              <p className="text-center">
+                <span className="font-medium">{caller} </span>
+                <span>muốn gọi {typeCall === 'video' ? 'video' : ''} cho bạn</span>
+              </p>
+
+              <ul className="mt-4 flex justify-center items-center gap-5 list-none mb-0">
+                <li>
+                  <Phone className="cursor-pointer" onClick={handleAccept} />
+                </li>
+
+                <li className="cursor-pointer" onClick={handleReject}>
+                  <X />
+                </li>
+              </ul>
+            </>
+          )}
         </div>
-        <p>
-          <span className="font-medium">LeAnhTien </span>
-          <span>muốn gọi {typeCall === 'video' ? 'video' : ''} cho bạn</span>
-        </p>
-
-        <ul className="flex justify-center items-center gap-5 list-none mb-0">
-          <li>
-            <Phone color={'#fff'} />
-          </li>
-
-          <li>
-            <X color={'#fff'} />
-          </li>
-        </ul>
       </div>
-    </div>
+    )
   )
 }
 

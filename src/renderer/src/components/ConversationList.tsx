@@ -2,10 +2,17 @@ import ConversationItem from './ConversationItem'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import { useCallback, useEffect } from 'react'
-import { CHAT_AUDIO_EVENT, CHAT_NEW_EVENT, MESSAGE_EVENT } from '../configs/consts'
+import {
+  ACCEPT_CALL_EVENT,
+  CHAT_AUDIO_EVENT,
+  CHAT_NEW_EVENT,
+  CHAT_VIDEO_EVENT,
+  MESSAGE_EVENT
+} from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
 import chatRepository from '../repositories/chat-repository'
+import useCallStore from '../stores/useCallStore'
 
 const ConversationList = () => {
   const {
@@ -17,6 +24,7 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
+  const { setStatus, setTypeCall, setCaller, initWS } = useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -91,6 +99,24 @@ const ConversationList = () => {
         }
 
         case CHAT_AUDIO_EVENT: {
+          setStatus('receiving-call')
+          setTypeCall('audio')
+          setCaller(data.senderUsername)
+          break
+        }
+
+        case CHAT_VIDEO_EVENT: {
+          setStatus('receiving-call')
+          setTypeCall('video')
+          setCaller(data.senderUsername)
+          break
+        }
+
+        // caller
+        case ACCEPT_CALL_EVENT: {
+          setStatus('on-call')
+          initWS('FROM_CALLER')
+          break
         }
       }
     }

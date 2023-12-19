@@ -8,10 +8,10 @@ import chatRepository from '../repositories/chat-repository'
 import { useCallback, useEffect } from 'react'
 import IConversation from '../interfaces/IConversation'
 import useAuthStore from '../stores/useAuthStore'
-import useWebSocketStore from '../stores/useWebSocketStore'
+import ReceivingCallModal from '../components/ReceivingCallModal'
 
 const HomeScreen = () => {
-  const { typeCall } = useCallStore()
+  const { status } = useCallStore()
   const { currentConversation, setConversations } = useConversationStore()
   const { userInfo } = useAuthStore()
 
@@ -76,22 +76,29 @@ const HomeScreen = () => {
       <div
         className={clsx(
           'bg-yellow-50 w-0 duration-700 relative overflow-hidden',
-          typeCall && 'w-3/4'
+          status === 'on-call' && 'w-3/4'
         )}
       >
         <VideoCall />
       </div>
 
-      <div className={clsx('w-1/4 h-full border-r overflow-hidden', typeCall && 'w-0 hidden')}>
+      <div
+        className={clsx(
+          'w-1/4 h-full border-r overflow-hidden',
+          status === 'on-call' && 'w-0 hidden'
+        )}
+      >
         <Sidebar />
       </div>
 
       <div
         className={clsx(
           'bg-white flex flex-col duration-700 overflow-hidden relative',
-          typeCall ? 'w-1/4' : 'w-3/4'
+          status === 'on-call' ? 'w-1/4' : 'w-3/4'
         )}
       >
+        <ReceivingCallModal />
+
         {currentConversation ? (
           <Chat />
         ) : (
