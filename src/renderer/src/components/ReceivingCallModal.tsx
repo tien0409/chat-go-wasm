@@ -27,6 +27,7 @@ const ReceivingCallModal = () => {
         senderUsername: userInfo?.userName
       })
     )
+    setStatus('on-call')
     setEnableAudio(typeCall === 'audio')
     setEnableVideo(typeCall === 'video')
     initWS('FROM_SENDER')
@@ -39,16 +40,18 @@ const ReceivingCallModal = () => {
   }
 
   return (
-    status !== 'idle' && (
+    status === 'receiving-call' ||
+    (status === 'calling' && (
       <div className="absolute inset-0">
         <span
-          className="absolute inset-0 bg-black/50"
+          className="absolute z-20 inset-0 bg-black/50"
           onClick={() => {
             setCaller(null)
             setTypeCall(null)
+            setStatus('idle')
           }}
         ></span>
-        <div className="relative w-80 bg-white py-4 px-8 rounded-lg overflow-hidden top-36 left-1/2 -translate-x-1/2">
+        <div className="relative w-80 z-20 bg-white py-4 px-8 rounded-lg overflow-hidden top-36 left-1/2 -translate-x-1/2">
           <div className="flex justify-center mb-3">
             <img className="w-14 rounded-full h-14" src={AVATAR_DEFAULT} />
           </div>
@@ -74,7 +77,7 @@ const ReceivingCallModal = () => {
           )}
         </div>
       </div>
-    )
+    ))
   )
 }
 

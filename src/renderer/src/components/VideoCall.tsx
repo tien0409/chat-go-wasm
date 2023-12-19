@@ -41,11 +41,10 @@ const VideoCall = () => {
     })
       .then(function (vidStream) {
         if (localRecorder == null) {
-          localRecorder = new MediaRecorder(vidStream, {
-            mimeType: 'video/webm; codecs="opus,vp8"'
-          })
+          localRecorder = new MediaRecorder(vidStream, {})
           localRecorder.ondataavailable = (event) => {
             encryptblobBrowser(event.data, ENCRYPT_KEY).then((result) => {
+              console.log('result', result)
               myWS.send(result)
             })
           }
@@ -84,6 +83,7 @@ const VideoCall = () => {
       remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     }
     myWS.onmessage = (msg) => {
+      console.log('msg', msg)
       const blob = new Blob([msg.data], {
         type: 'video/webm; codecs="opus,vp8"'
       })

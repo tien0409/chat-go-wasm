@@ -24,7 +24,7 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
-  const { setStatus, setTypeCall, setCaller, initWS } = useCallStore()
+  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken } = useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -102,6 +102,7 @@ const ConversationList = () => {
           setStatus('receiving-call')
           setTypeCall('audio')
           setCaller(data.senderUsername)
+          setVoipToken(data.cipherMessage)
           break
         }
 
@@ -109,6 +110,7 @@ const ConversationList = () => {
           setStatus('receiving-call')
           setTypeCall('video')
           setCaller(data.senderUsername)
+          setVoipToken(data.cipherMessage)
           break
         }
 

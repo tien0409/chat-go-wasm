@@ -10,7 +10,8 @@ import useAuthStore from '../stores/useAuthStore'
 
 const MessageSearch = () => {
   const { userInfo } = useAuthStore()
-  const { typeCall, setEnableAudio, setCaller, setTypeCall, setVoipToken } = useCallStore()
+  const { typeCall, setEnableAudio, setStatus, setCaller, setTypeCall, setVoipToken } =
+    useCallStore()
   const { currentConversation } = useConversationStore()
 
   const [searchValue, setSearchValue] = useState('')
@@ -22,6 +23,7 @@ const MessageSearch = () => {
   const handleCall = async () => {
     try {
       setCaller(userInfo!.userName)
+      setStatus('calling')
       setEnableAudio(true)
       setTypeCall('audio')
       const res = await callRepository.initVOIP(currentConversation!, CHAT_AUDIO_EVENT)

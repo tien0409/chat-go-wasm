@@ -21,12 +21,13 @@ type IVideoCallStore = {
   turnOffCall: () => void
 }
 
-const useCallStore = create<IVideoCallStore>((set, get) => ({
+const useCallStore = create<IVideoCallStore>((set, getState) => ({
   myWS: null,
   initWS: (type: 'FROM_CALLER' | 'FROM_SENDER') => {
     console.log('type', type)
+    console.log('get()', getState())
     const ws = new WebSocket(
-      WS_CALL_URL.replace('{{voipToken}}', get().voipToken!).replace('{{connType}}', type)
+      WS_CALL_URL.replace('{{voipToken}}', getState().voipToken!).replace('{{connType}}', type)
     )
     console.log('ws', ws)
     set(() => ({ myWS: ws }))
