@@ -40,8 +40,7 @@ const ReceivingCallModal = () => {
   }
 
   return (
-    status === 'receiving-call' ||
-    (status === 'calling' && (
+    (status === 'receiving-call' || status === 'calling') && (
       <div className="absolute inset-0">
         <span
           className="absolute z-20 inset-0 bg-black/50"
@@ -77,7 +76,7 @@ const ReceivingCallModal = () => {
           )}
         </div>
       </div>
-    ))
+    )
   )
 }
 
