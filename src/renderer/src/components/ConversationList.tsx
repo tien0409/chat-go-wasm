@@ -2,7 +2,7 @@ import ConversationItem from './ConversationItem'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import { useCallback, useEffect } from 'react'
-import { CHAT_NEW_EVENT, MESSAGE_EVENT } from '../configs/consts'
+import { CHAT_AUDIO_EVENT, CHAT_NEW_EVENT, MESSAGE_EVENT } from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
 import chatRepository from '../repositories/chat-repository'
@@ -33,7 +33,9 @@ const ConversationList = () => {
   useEffect(() => {
     if (!websocket) return
     websocket.onmessage = async (msg) => {
+      console.log('msg', msg)
       const data = JSON.parse(msg.data)
+      console.log('data', data)
       switch (data.type) {
         case CHAT_NEW_EVENT: {
           const newConversation: IConversation = {
@@ -86,6 +88,9 @@ const ConversationList = () => {
           const ratchetDetail = await window.saveRatchet(data.chatSessionId!)
           await window.api.changeRatchetDetail(data.senderUsername!, ratchetDetail)
           break
+        }
+
+        case CHAT_AUDIO_EVENT: {
         }
       }
     }

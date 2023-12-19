@@ -8,6 +8,7 @@ import chatRepository from '../repositories/chat-repository'
 import { useCallback, useEffect } from 'react'
 import IConversation from '../interfaces/IConversation'
 import useAuthStore from '../stores/useAuthStore'
+import useWebSocketStore from '../stores/useWebSocketStore'
 
 const HomeScreen = () => {
   const { typeCall } = useCallStore()
