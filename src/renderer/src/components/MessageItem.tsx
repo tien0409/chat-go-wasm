@@ -4,8 +4,8 @@ import IMessage from '../interfaces/IMessage'
 import { memo, useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
 import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
-import { b64toBlob } from '../utils'
 import uploadRepository from '../repositories/upload-repository'
+import { decryptblobBrowser } from '../crypto/cryptoLib'
 
 type MessageItemProps = {
   message: IMessage
@@ -26,12 +26,11 @@ const MessageItem = (props: MessageItemProps) => {
   useEffect(() => {
     if (message.type !== TEXT_TYPE && message.filePath) {
       ;(async function () {
-        const [randomKey, filePath, mimeType, filename, fileSize] = message.filePath!.split(':')
+        const [randomKey, filePath, , filename, fileSize] = message.filePath!.split(':')
         const res = await uploadRepository.downloadFile(filePath!)
-        const arrBuffer = await res.data.arrayBuffer()
-        const imgB64 = await window.api.decryptblob(arrBuffer, randomKey, mimeType)
-        const blob = b64toBlob(imgB64, mimeType)
-        const url = URL.createObjectURL(blob)
+        const responseBlob = await res.data
+        const decryptedData = await decryptblobBrowser(responseBlob, randomKey)
+        const url = URL.createObjectURL(decryptedData)
         setContent(url)
 
         if (message.type === FILE_TYPE) {

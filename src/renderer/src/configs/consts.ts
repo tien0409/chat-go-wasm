@@ -1,12 +1,14 @@
-export const API_URL = 'https://ab18-171-251-90-158.ngrok-free.app'
+export const API_URL = 'http://localhost:7777'
 export const IMAGE_URL = API_URL + '/api/v1/file/get?fileId='
-export const SOCKET_URL = 'wss://ab18-171-251-90-158.ngrok-free.app'
+export const SOCKET_URL = 'ws://localhost:7777'
+
 export const ACCESS_TOKEN_KEY = 'access_token'
+
 export const CHAT_PREFIX = 'chat_'
 export const CHAT_FILE = 'chat.json'
 export const RATCHET_FILE = 'ratchet.json'
-// export const AUTH_FILE = 'auth.json'
-export const AUTH_FILE = 'auth2.json'
+export const AUTH_FILE = 'auth.json'
+// export const AUTH_FILE = 'auth2.json'
 export const AVATAR_FILE = 'avatar'
 
 export const TEXT_TYPE = 'CHAT_TEXT' as const
