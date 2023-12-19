@@ -5,19 +5,11 @@ import useCallStore from '../stores/useCallStore'
 import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
 
 const VideoCall = () => {
-  const { enableVideo, enableAudio, setEnableVideo, setEnableAudio, turnOffCall } = useCallStore()
+  const { enableVideo, enableAudio, myWS, setEnableVideo, setEnableAudio, turnOffCall } =
+    useCallStore()
 
-  const VOIP_TOKEN = 'LbqxmXO6ardFW_xPMOaUjUObwnGWAE9gGU0Vm2cb9Ks'
+  // const VOIP_TOKEN = 'LbqxmXO6ardFW_xPMOaUjUObwnGWAE9gGU0Vm2cb9Ks'
   const ENCRYPT_KEY = 'e/cyuqcGcTgF5Q2VzB1iTw=='
-  const requestTemplate = 'ws://127.0.0.1:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
-
-  const senderWs = new WebSocket(
-    requestTemplate.replace('{{voipToken}}', VOIP_TOKEN).replace('{{connType}}', 'FROM_CALLER')
-  )
-
-  const recieverWs = new WebSocket(
-    requestTemplate.replace('{{voipToken}}', VOIP_TOKEN).replace('{{connType}}', 'FROM_RECIEVER')
-  )
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -40,26 +32,20 @@ const VideoCall = () => {
   let remoteSrcBuffer: SourceBuffer
 
   useEffect(() => {
-    senderWs.onopen = () => {
-      console.log('SenderVOIP Connected')
-    }
-    recieverWs.onopen = () => {
-      console.log('RecieverVOIP VOIP Connected')
-    }
+    if (!myWS) return
 
     // LOCAL setup
     All_mediaDevices.getUserMedia({
-      audio: true,
-      video: true
+      audio: enableAudio,
+      video: enableVideo
     })
       .then(function (vidStream) {
         if (localRecorder == null) {
-          localRecorder = new MediaRecorder(vidStream, {
-            mimeType: 'video/webm; codecs="opus,vp8"'
-          })
+          localRecorder = new MediaRecorder(vidStream, {})
           localRecorder.ondataavailable = (event) => {
             encryptblobBrowser(event.data, ENCRYPT_KEY).then((result) => {
-              senderWs.send(result)
+              console.log('result', result)
+              myWS.send(result)
             })
           }
           localRecorder.start(100)
@@ -96,7 +82,8 @@ const VideoCall = () => {
     if (remoteVideoRef.current != null) {
       remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     }
-    recieverWs.onmessage = (msg) => {
+    myWS.onmessage = (msg) => {
+      console.log('msg', msg)
       const blob = new Blob([msg.data], {
         type: 'video/webm; codecs="opus,vp8"'
       })
@@ -129,7 +116,7 @@ const VideoCall = () => {
           })
       })
     }
-  }, [])
+  }, [myWS])
 
   return (
     <div className="flex items-center justify-center h-full w-full">
