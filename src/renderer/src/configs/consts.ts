@@ -7,7 +7,7 @@ export const WS_CALL_URL =
 export const ACCESS_TOKEN_KEY = 'access_token'
 
 export const CHAT_PREFIX = 'chat_'
-export const CHAT_FILE = 'chat.json'
+export const CHAT_FILE = 'chat.js on'
 export const RATCHET_FILE = 'ratchet.json'
 export const AUTH_FILE = 'auth.json'
 // export const AUTH_FILE = 'auth2.json'

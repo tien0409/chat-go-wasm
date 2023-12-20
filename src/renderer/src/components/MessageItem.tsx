@@ -20,8 +20,13 @@ const MessageItem = (props: MessageItemProps) => {
   )
   const [filename, setFileName] = useState('')
   const [fileSize, setFileSize] = useState(0)
+  const [isOpen, setIsOpen] = useState(false)
 
   const isSender = message.sender === userInfo?.userName
+
+  const handleOpenModal = () => {
+    setIsOpen(true)
+  }
 
   useEffect(() => {
     if (message.type !== TEXT_TYPE && message.filePath) {
@@ -43,6 +48,14 @@ const MessageItem = (props: MessageItemProps) => {
 
   return (
     <div className={clsx('flex gap-x-3 group', isSender ? 'flex-row-reverse' : 'items-start')}>
+      {isOpen && (
+        <div className="absolute inset-0 bg-black/50 z-50">
+          <div className="relative w-80 z-20 bg-white py-4 px-8 rounded-lg overflow-hidden top-36 left-1/2 -translate-x-1/2">
+            abc
+          </div>
+        </div>
+      )}
+
       <img
         src="https://source.unsplash.com/RZrIJ8C0860"
         alt="image"
@@ -70,7 +83,7 @@ const MessageItem = (props: MessageItemProps) => {
         </div>
 
         <div className="opacity-0 group-hover:opacity-100 duration-200">
-          {isSender && <Trash className="cursor-pointer" size={14} />}
+          {isSender && <Trash className="cursor-pointer" size={14} onClick={handleOpenModal} />}
         </div>
       </div>
     </div>

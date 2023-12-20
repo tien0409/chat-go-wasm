@@ -17,7 +17,7 @@ const MenuAction = (props: MenuActionProps) => {
   const { isMenuOpen, setIsMenuOpen } = props
 
   const navigate = useNavigate()
-  const { websocket } = useWebSocketStore()
+  const { removeSocket } = useWebSocketStore()
   const { userInfo, setAuthToken } = useAuthStore()
 
   const [isOpenChangeAvatar, setIsOpenChangeAvatar] = useState(false)
@@ -25,7 +25,7 @@ const MenuAction = (props: MenuActionProps) => {
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     setAuthToken('')
-    websocket!.close()
+    removeSocket()
     navigate(SIGN_IN_PAGE)
   }
 

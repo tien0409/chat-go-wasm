@@ -5,7 +5,7 @@ import { HOME_PAGE, SIGN_IN_PAGE } from '../configs/routes'
 import { toast } from 'react-toastify'
 import authRepository from '../repositories/auth-repository'
 import PinInput from 'react-pin-input'
-import { ACCESS_TOKEN_KEY } from '../configs/consts'
+import { ACCESS_TOKEN_KEY, AVATAR_DEFAULT, IMAGE_URL } from '../configs/consts'
 import axiosInstance from '../libs/axios'
 import useAuthStore from '../stores/useAuthStore'
 import { hashSync } from 'bcryptjs'
@@ -75,6 +75,10 @@ const SignUpScreen = () => {
         authRepository.getAuthToken(),
         authRepository.uploadExternalKey(externalKeyBundle)
       ])
+
+      userInfoRes.data.avatar = userInfoRes.data.avatar
+        ? IMAGE_URL + userInfoRes.data.avatar
+        : AVATAR_DEFAULT
       setAuthToken(authToken.data.authToken)
       setUserInfo(userInfoRes.data)
       setIsAuth(true)

@@ -50,6 +50,7 @@ const PinAuthentication = ({ children }: { children: ReactNode }) => {
         userInfoRes.data.avatar = userInfoRes.data.avatar
           ? IMAGE_URL + userInfoRes.data.avatar
           : AVATAR_DEFAULT
+        console.log('userInfoRes', userInfoRes)
         setUserInfo(userInfoRes.data)
         setIsAuth(true)
         setErrorMessage('')

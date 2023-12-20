@@ -113,7 +113,12 @@ const ConversationItem = (props: ConversationItemProps) => {
         </div>
       </div>
 
-      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+      <div className="flex flex-col items-end">
+        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+        <span className="text-[10px] text-gray-500">
+          {conversation.updatedAt && new Date(conversation.updatedAt).toLocaleTimeString()}
+        </span>
+      </div>
     </div>
   )
 }

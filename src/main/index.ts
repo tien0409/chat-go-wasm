@@ -272,7 +272,8 @@ function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUser
 }
 
 function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUsername: string) {
-  const result: { receiver: string; ratchetId: string; lastMessage: string }[] = []
+  const result: { receiver: string; ratchetId: string; lastMessage: string; updatedAt: string }[] =
+    []
   try {
     const chatFilenames = fs
       .readdirSync(process.cwd())
@@ -290,9 +291,13 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
       result.push({
         lastMessage: parsedContent?.messages?.[parsedContent.messages?.length - 1]?.content || '',
         receiver: chatFilename.replace(CHAT_PREFIX, '').replace('.json', ''),
-        ratchetId: JSON.parse(content).ratchetId
+        ratchetId: JSON.parse(content).ratchetId,
+        updatedAt: parsedContent.updatedAt
       })
     }
+    console.log('result before', result)
+    result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    console.log('result after', result)
   } catch (error) {
     console.error('ERROR', error)
   }
@@ -316,6 +321,7 @@ function handleAddMessageToRatchet(
       const parsedContent = JSON.parse(fileContent)
       if (!parsedContent.messages) parsedContent.messages = []
       parsedContent.messages = [...parsedContent.messages, ...messages]
+      parsedContent.updatedAt = new Date().toISOString()
 
       fs.writeFileSync(filename, JSON.stringify(parsedContent), {
         encoding: 'utf8'

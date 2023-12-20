@@ -33,7 +33,8 @@ const HomeScreen = () => {
       const newConversations: IConversation[] = oldChatSessions.map((item) => ({
         lastMessage: item.lastMessage,
         receiver: item.receiver,
-        id: item.ratchetId
+        id: item.ratchetId,
+        updatedAt: item.updatedAt
       }))
 
       // get pending chat session

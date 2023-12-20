@@ -41,7 +41,7 @@ declare global {
       writeRatchetFile(username: string, ratchetData: any): Promise<void>
       getRatchetId(username: string): Promise<string>
       getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>
-      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string}[]>
+      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string, updatedAt: string}[]>
       addMessageToRatchet(receiver: string, messages: IMessage[]): Promise<void>
       getMessagesByUsername(username: string): Promise<IMessage[]>
     }
