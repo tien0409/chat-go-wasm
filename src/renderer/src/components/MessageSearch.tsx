@@ -4,14 +4,23 @@ import { FormEvent, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
 import useConversationStore from '../stores/useConversationStore'
-import { CHAT_AUDIO_EVENT } from '../configs/consts'
+import { CHAT_AUDIO_EVENT, CHAT_VIDEO_EVENT } from '../configs/consts'
 import callRepository from '../repositories/call-repository'
 import useAuthStore from '../stores/useAuthStore'
+import userRepository from '../repositories/user-repository'
 
 const MessageSearch = () => {
   const { userInfo } = useAuthStore()
-  const { typeCall, setEnableAudio, setStatus, setCaller, setTypeCall, setVoipToken } =
-    useCallStore()
+  const {
+    typeCall,
+    setEnableAudio,
+    setEnableVideo,
+    setStatus,
+    setCaller,
+    setTypeCall,
+    setVoipToken,
+    setEncKey
+  } = useCallStore()
   const { currentConversation } = useConversationStore()
 
   const [searchValue, setSearchValue] = useState('')
@@ -20,14 +29,24 @@ const MessageSearch = () => {
     e.preventDefault()
   }
 
-  const handleCall = async () => {
+  const handleAudioCall = async () => {
     try {
+      const otherUserKeyBundle = await userRepository.getExternalUserKey(currentConversation!)
+      const initRatchetRes = await window.initRatchetFromInternal(
+        JSON.stringify(otherUserKeyBundle.data)
+      )
+      const res = await callRepository.initVOIP(
+        currentConversation!,
+        CHAT_AUDIO_EVENT,
+        initRatchetRes.ephemeralKey
+      )
+      const ratchetInfo = await window.saveRatchet(initRatchetRes.ratchetId)
+      setVoipToken(res.data.voipSession)
+      setEncKey(ratchetInfo.root_key)
       setCaller(userInfo!.userName)
       setStatus('calling')
       setEnableAudio(true)
       setTypeCall('audio')
-      const res = await callRepository.initVOIP(currentConversation!, CHAT_AUDIO_EVENT)
-      setVoipToken(res.data.voipSession)
     } catch (error) {
       setTypeCall(null)
       setCaller(null)
@@ -35,8 +54,30 @@ const MessageSearch = () => {
     }
   }
 
-  const handleVideoCall = () => {
-    setTypeCall('video')
+  const handleVideoCall = async () => {
+    try {
+      const otherUserKeyBundle = await userRepository.getExternalUserKey(currentConversation!)
+      const initRatchetRes = await window.initRatchetFromInternal(
+        JSON.stringify(otherUserKeyBundle.data)
+      )
+      const res = await callRepository.initVOIP(
+        currentConversation!,
+        CHAT_VIDEO_EVENT,
+        initRatchetRes.ephemeralKey
+      )
+      const ratchetInfo = await window.saveRatchet(initRatchetRes.ratchetId)
+      setVoipToken(res.data.voipSession)
+      setEncKey(ratchetInfo.root_key)
+      setCaller(userInfo!.userName)
+      setStatus('calling')
+      setEnableAudio(true)
+      setEnableVideo(true)
+      setTypeCall('video')
+    } catch (error) {
+      setTypeCall(null)
+      setCaller(null)
+      console.error('ERROR', error)
+    }
   }
 
   return (
@@ -73,7 +114,7 @@ const MessageSearch = () => {
 
         {!typeCall && (
           <>
-            <Phone className="cursor-pointer" onClick={handleCall} />
+            <Phone className="cursor-pointer" onClick={handleAudioCall} />
             <Video className="cursor-pointer" onClick={handleVideoCall} />
           </>
         )}

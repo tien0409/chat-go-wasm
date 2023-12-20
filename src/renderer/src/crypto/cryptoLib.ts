@@ -35,26 +35,24 @@ export async function decryptblob(encblob, rawKey) {
 }
 
 export async function encryptblobBrowser(blob, rawKey) {
-  const key = await window.crypto.subtle.importKey(
-    'raw',
-    base64ToArrayBuffer(rawKey),
-    'AES-CBC',
-    true,
-    ['encrypt', 'decrypt']
-  )
+  const byteArray = new TextEncoder().encode(rawKey)
+  const buffer = byteArray.buffer
+  const key = await window.crypto.subtle.importKey('raw', buffer, 'AES-CBC', true, [
+    'encrypt',
+    'decrypt'
+  ])
   const data = await blob.arrayBuffer()
   const result = await window.crypto.subtle.encrypt(algorithm, key, data)
   return new Blob([result])
 }
 
 export async function decryptblobBrowser(encblob, rawKey) {
-  const key = await window.crypto.subtle.importKey(
-    'raw',
-    base64ToArrayBuffer(rawKey),
-    'AES-CBC',
-    true,
-    ['encrypt', 'decrypt']
-  )
+  const byteArray = new TextEncoder().encode(rawKey)
+  const buffer = byteArray.buffer
+  const key = await window.crypto.subtle.importKey('raw', buffer, 'AES-CBC', true, [
+    'encrypt',
+    'decrypt'
+  ])
   const data = await encblob.arrayBuffer()
   const decryptedData = await window.crypto.subtle.decrypt(algorithm, key, data)
   return new Blob([decryptedData])

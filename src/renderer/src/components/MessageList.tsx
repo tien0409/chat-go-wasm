@@ -3,7 +3,6 @@ import { memo, MouseEvent, MutableRefObject, useEffect, useState } from 'react'
 import { MoveDown } from 'lucide-react'
 import useConversationStore from '../stores/useConversationStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
-import ReceivingCallModal from './ReceivingCallModal'
 
 type MessageListProps = {
   lastMessageRef: MutableRefObject<HTMLDivElement | null>

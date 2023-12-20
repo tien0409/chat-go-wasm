@@ -6,10 +6,8 @@ import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
 import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
 
 const VideoCall = () => {
-  const { enableVideo, enableAudio, myWS, setEnableVideo, setEnableAudio, turnOffCall } =
+  const { enableVideo, enableAudio, myWS, encKey, setEnableVideo, setEnableAudio, turnOffCall } =
     useCallStore()
-
-  const ENCRYPT_KEY = 'e/cyuqcGcTgF5Q2VzB1iTw=='
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -32,8 +30,9 @@ const VideoCall = () => {
   let remoteSrcBuffer: SourceBuffer
 
   useEffect(() => {
-    if (!myWS) return
-
+    if (!myWS || !encKey) return
+    const ENC_KEY = encKey.substring(0, 16)
+    console.log(ENC_KEY)
     const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
 
     // LOCAL setup
@@ -47,7 +46,7 @@ const VideoCall = () => {
             mimeType: mimeType
           })
           localRecorder.ondataavailable = (event) => {
-            encryptblobBrowser(event.data, ENCRYPT_KEY).then((result) => {
+            encryptblobBrowser(event.data, ENC_KEY).then((result) => {
               myWS.send(result)
             })
           }
@@ -89,7 +88,7 @@ const VideoCall = () => {
       const blob = new Blob([msg.data], {
         type: mimeType
       })
-      decryptblobBrowser(blob, ENCRYPT_KEY).then((result) => {
+      decryptblobBrowser(blob, ENC_KEY).then((result) => {
         result
           .slice(0, result.size)
           .arrayBuffer()

@@ -13,6 +13,7 @@ import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
 import chatRepository from '../repositories/chat-repository'
 import useCallStore from '../stores/useCallStore'
+import userRepository from '../repositories/user-repository'
 
 const ConversationList = () => {
   const {
@@ -24,7 +25,7 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
-  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken } = useCallStore()
+  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken, setEncKey } = useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -103,6 +104,14 @@ const ConversationList = () => {
           setTypeCall('audio')
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
+          const res = await userRepository.getExternalUserKey(data.senderUsername)
+          const ratchetRes = await window.initRatchetFromExternal(
+            JSON.stringify(res.data),
+            data.plainMessage,
+            ''
+          )
+          const ratchetDetail = await window.saveRatchet(ratchetRes.ratchetId)
+          setEncKey(ratchetDetail.root_key)
           break
         }
 
@@ -111,6 +120,14 @@ const ConversationList = () => {
           setTypeCall('video')
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
+          const res = await userRepository.getExternalUserKey(data.senderUsername)
+          const ratchetRes = await window.initRatchetFromExternal(
+            JSON.stringify(res.data),
+            data.plainMessage,
+            ''
+          )
+          const ratchetDetail = await window.saveRatchet(ratchetRes.ratchetId)
+          setEncKey(ratchetDetail.root_key)
           break
         }
 
