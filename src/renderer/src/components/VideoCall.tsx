@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
-import { decryptblobBrowser, encryptblobBrowser } from '../crypto/cryptoLib'
+import { decryptblobVoip, encryptblobVoip } from '../crypto/cryptoLib'
 import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
 
 const VideoCall = () => {
@@ -46,7 +46,7 @@ const VideoCall = () => {
             mimeType: mimeType
           })
           localRecorder.ondataavailable = (event) => {
-            encryptblobBrowser(event.data, ENC_KEY).then((result) => {
+            encryptblobVoip(event.data, ENC_KEY).then((result) => {
               myWS.send(result)
             })
           }
@@ -88,7 +88,7 @@ const VideoCall = () => {
       const blob = new Blob([msg.data], {
         type: mimeType
       })
-      decryptblobBrowser(blob, ENC_KEY).then((result) => {
+      decryptblobVoip(blob, ENC_KEY).then((result) => {
         result
           .slice(0, result.size)
           .arrayBuffer()
