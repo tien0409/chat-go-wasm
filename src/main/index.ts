@@ -295,9 +295,7 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
         updatedAt: parsedContent.updatedAt
       })
     }
-    console.log('result before', result)
     result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    console.log('result after', result)
   } catch (error) {
     console.error('ERROR', error)
   }

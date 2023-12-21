@@ -42,9 +42,7 @@ const ConversationList = () => {
   useEffect(() => {
     if (!websocket) return
     websocket.onmessage = async (msg) => {
-      console.log('msg', msg)
       const data = JSON.parse(msg.data)
-      console.log('data', data)
       switch (data.type) {
         case CHAT_NEW_EVENT: {
           const newConversation: IConversation = {

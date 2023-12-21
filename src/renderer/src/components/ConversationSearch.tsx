@@ -5,6 +5,7 @@ import MenuAction from './MenuAction'
 import userRepository from '../repositories/user-repository'
 import useConversationStore from '../stores/useConversationStore'
 import useAuthStore from '../stores/useAuthStore'
+import IConversation from '../interfaces/IConversation'
 
 const ConversationSearch = () => {
   const { setConversations } = useConversationStore()
@@ -16,17 +17,33 @@ const ConversationSearch = () => {
   const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault()
-      const res = await userRepository.searchUser(searchValue)
-      const newConversation =
-        res.data
-          ?.map((user) => ({
-            id: user.id,
-            receiver: user.userName,
-            lastMessage: ''
-          }))
-          .filter((conversation) => conversation.id !== userInfo?.id) || []
+      let newConversations: IConversation[]
 
-      setConversations(newConversation)
+      // reset to old conversations
+      if (searchValue.trim() === '') {
+        const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
+        newConversations = oldChatSessions
+          .map((item) => ({
+            lastMessage: item.lastMessage,
+            receiver: item.receiver,
+            id: item.ratchetId,
+            updatedAt: item.updatedAt
+          }))
+          .sort((a, b) => {
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          })
+      } else {
+        const res = await userRepository.searchUser(searchValue)
+        newConversations =
+          res.data
+            ?.map((user) => ({
+              id: user.id,
+              receiver: user.userName,
+              lastMessage: ''
+            }))
+            .filter((conversation) => conversation.id !== userInfo?.id) || []
+      }
+      setConversations(newConversations)
     } catch (error) {
       console.error('ERROR', error)
     }
@@ -53,4 +70,4 @@ const ConversationSearch = () => {
   )
 }
 
-export default ConversationSearch;
+export default ConversationSearch
