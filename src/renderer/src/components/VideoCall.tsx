@@ -6,16 +6,8 @@ import { decryptblobVoip, encryptblobVoip } from '../crypto/cryptoLib'
 import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
 
 const VideoCall = () => {
-  const {
-    enableVideo,
-    enableAudio,
-    myWS,
-    encKey,
-    setEnableVideo,
-    setEnableAudio,
-    turnOffCall,
-    initCallType
-  } = useCallStore()
+  const { enableVideo, enableAudio, myWS, encKey, setEnableVideo, setEnableAudio, turnOffCall } =
+    useCallStore()
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -77,6 +69,21 @@ const VideoCall = () => {
       remoteVideoRef.current.src = window.URL.createObjectURL(remoteMediaSource)
     }
 
+    // REMOTE setup
+    remoteMediaSource.addEventListener('sourceopen', () => {
+      if (
+        !remoteMediaSource.readyState.localeCompare('open') &&
+        remoteMediaSource.sourceBuffers.length == 0
+      ) {
+        remoteSrcBuffer = remoteMediaSource.addSourceBuffer(mimeType)
+        remoteSrcBuffer.addEventListener('updateend', () => {
+          if (remoteVideoRef.current != null) {
+            remoteVideoRef.current.play()
+          }
+        })
+      }
+    })
+
     // WS handler
     myWS.onmessage = (msg) => {
       const blob = new Blob([msg.data], {
@@ -110,32 +117,6 @@ const VideoCall = () => {
             }
           })
       })
-    }
-
-    const initRemote = () => {
-      // REMOTE setup
-      remoteMediaSource.addEventListener('sourceopen', () => {
-        if (
-          !remoteMediaSource.readyState.localeCompare('open') &&
-          remoteMediaSource.sourceBuffers.length == 0
-        ) {
-          remoteSrcBuffer = remoteMediaSource.addSourceBuffer(mimeType)
-          remoteSrcBuffer.addEventListener('updateend', () => {
-            if (remoteVideoRef.current != null) {
-              remoteVideoRef.current.play()
-            }
-          })
-        }
-      })
-    }
-
-    if (initCallType === 'FROM_CALLER') {
-      setTimeout(() => {
-        initRemote()
-        console.log('remote source init')
-      }, 1000)
-    } else {
-      initRemote()
     }
   }, [myWS])
 
