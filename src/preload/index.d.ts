@@ -39,11 +39,13 @@ declare global {
       createRatchetFile(username: string, ratchetDetail: IRatchetDetail, ratchetId: string): Promise<void>
       changeRatchetDetail(receiver: string, ratchetDetail: IRatchetDetail): Promise<void>
       writeRatchetFile(username: string, ratchetData: any): Promise<void>
+      changeConversationReaded(username: string, isReaded: boolean): Promise<void>
       getRatchetId(username: string): Promise<string>
       getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>
-      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string, updatedAt: string}[]>
+      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string, updatedAt: string, isReaded: boolean}[]>
       addMessageToRatchet(receiver: string, messages: IMessage[]): Promise<void>
       getMessagesByUsername(username: string): Promise<IMessage[]>
+      deleteMessage(receiver: string, index: number): Promise<void>
     }
   }
 }

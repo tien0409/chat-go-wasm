@@ -2,6 +2,8 @@ import { Menu } from 'lucide-react'
 import Input from './Input'
 import { FormEvent, useState } from 'react'
 import MenuAction from './MenuAction'
+import _uniqWith from 'lodash/uniqWith'
+import _intersectionWith from 'lodash/intersectionWith'
 import userRepository from '../repositories/user-repository'
 import useConversationStore from '../stores/useConversationStore'
 import useAuthStore from '../stores/useAuthStore'
@@ -33,7 +35,16 @@ const ConversationSearch = () => {
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           })
       } else {
+        const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
         const res = await userRepository.searchUser(searchValue)
+        const oldConversations: IConversation[] = oldChatSessions.map((item) => ({
+          id: item.ratchetId,
+          receiver: item.receiver,
+          lastMessage: item.lastMessage,
+          isReaded: item.isReaded,
+          updatedAt: item.updatedAt
+        }))
+
         newConversations =
           res.data
             ?.map((user) => ({
@@ -42,6 +53,16 @@ const ConversationSearch = () => {
               lastMessage: ''
             }))
             .filter((conversation) => conversation.id !== userInfo?.id) || []
+
+        const intersection = _intersectionWith(
+          oldConversations,
+          newConversations,
+          (a, b) => a.receiver === b.receiver
+        )
+        newConversations = _uniqWith(
+          [...intersection, ...newConversations],
+          (a, b) => a.receiver === b.receiver
+        )
       }
       setConversations(newConversations)
     } catch (error) {

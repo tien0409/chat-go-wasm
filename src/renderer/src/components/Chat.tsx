@@ -10,6 +10,11 @@ const Chat = () => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  const handleScrollToMessage = useCallback((messageIndex: number) => {
+    const messageElement = document.getElementById(messageIndex.toString())
+    messageElement?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
   const handleScroll = () => {
     requestIdleCallback(() => {
       lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -18,7 +23,7 @@ const Chat = () => {
 
   return (
     <>
-      <MessageSearch />
+      <MessageSearch handleScrollToMessage={handleScrollToMessage} />
 
       <div className="pt-4 flex-1 mb-16 overflow-auto">
         <MessageList lastMessageRef={lastMessageRef} handleScrollBottom={handleScrollBottom} />

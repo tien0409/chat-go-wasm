@@ -14,12 +14,14 @@ import { toast } from 'react-toastify'
 import chatRepository from '../repositories/chat-repository'
 import useCallStore from '../stores/useCallStore'
 import userRepository from '../repositories/user-repository'
+import IMessage from '../interfaces/IMessage'
 
 const ConversationList = () => {
   const {
     setChatAction,
     setMessages,
     currentConversation,
+    currentRatchetId,
     messages,
     conversations,
     setConversations
@@ -48,7 +50,9 @@ const ConversationList = () => {
           const newConversation: IConversation = {
             id: data.chatSessionId,
             receiver: data.senderUsername,
-            lastMessage: ''
+            lastMessage: '',
+            updatedAt: new Date().toISOString(),
+            isReaded: false
           }
           setConversations([newConversation, ...conversations])
           if (data.plainMessage) toast.info(data.plainMessage)
@@ -66,11 +70,12 @@ const ConversationList = () => {
             })
           )
 
-          const newMessage = {
+          const newMessage: IMessage = {
             index: data.index,
             content: content,
             type: data.type,
-            sender: data.senderUsername
+            sender: data.senderUsername,
+            isDeleted: false
           }
 
           if (data.senderUsername === currentConversation) {
@@ -86,11 +91,14 @@ const ConversationList = () => {
           const newConversations = [...conversations]
           if (!newConversations[conversationIndex]) return
           newConversations[conversationIndex].lastMessage = content
+
           const temp = newConversations[conversationIndex]
+          temp.isReaded = temp.id === currentRatchetId
           newConversations.splice(conversationIndex, 1)
           newConversations.unshift(temp)
           setConversations(newConversations)
 
+          await window.api.changeConversationReaded(data.senderUsername, temp.isReaded)
           // save new ratchet detail
           const ratchetDetail = await window.saveRatchet(data.chatSessionId!)
           await window.api.changeRatchetDetail(data.senderUsername!, ratchetDetail)

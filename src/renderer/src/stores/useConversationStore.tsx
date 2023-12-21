@@ -11,6 +11,10 @@ type IConversationStore = {
   setConversations: (conversations: IConversation[]) => void
   currentConversation: string | null
   setCurrentConversation: (id: string | null) => void
+  currentIdxSearch: number
+  setCurrentIdxSearch: (idx: number) => void
+  messageSearches: string[]
+  setMessageSearches: (messageSearches: string[]) => void
   messages: IMessage[]
   setMessages: (messages: IMessage[]) => void
 }
@@ -24,6 +28,10 @@ const useConversationStore = create<IConversationStore>((set) => ({
   setConversations: (conversations) => set({ conversations }),
   currentConversation: null,
   setCurrentConversation: (id) => set({ currentConversation: id }),
+  currentIdxSearch: 0,
+  setCurrentIdxSearch: (idx) => set({ currentIdxSearch: idx }),
+  messageSearches: [],
+  setMessageSearches: (messageSearches) => set({ messageSearches }),
   messages: [],
   setMessages: (messages) => set({ messages })
 }))

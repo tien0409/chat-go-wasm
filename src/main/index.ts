@@ -80,6 +80,8 @@ app.whenReady().then(() => {
   ipcMain.handle('r_getOldChatSessions', handleGetOldChatSessions)
   ipcMain.handle('r_addMessageToRatchet', handleAddMessageToRatchet)
   ipcMain.handle('r_getMessagesByUsername', handleGetMessagesByUsername)
+  ipcMain.handle('r_deleteMessage', handleDeleteMessage)
+  ipcMain.handle('r_changeConversationReaded', handleChangeConversationReaded)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -272,8 +274,13 @@ function handleGetRatchetDetailList(_e: Electron.IpcMainInvokeEvent, currentUser
 }
 
 function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUsername: string) {
-  const result: { receiver: string; ratchetId: string; lastMessage: string; updatedAt: string }[] =
-    []
+  const result: {
+    receiver: string
+    ratchetId: string
+    lastMessage: string
+    updatedAt: string
+    isReaded: boolean
+  }[] = []
   try {
     const chatFilenames = fs
       .readdirSync(process.cwd())
@@ -289,10 +296,11 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
       const parsedContent = JSON.parse(content)
 
       result.push({
-        lastMessage: parsedContent?.messages?.[parsedContent.messages?.length - 1]?.content || '',
+        lastMessage: parsedContent?.lastMessage || '',
         receiver: chatFilename.replace(CHAT_PREFIX, '').replace('.json', ''),
         ratchetId: JSON.parse(content).ratchetId,
-        updatedAt: parsedContent.updatedAt
+        updatedAt: parsedContent.updatedAt,
+        isReaded: parsedContent.isReaded || false
       })
     }
     result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -320,6 +328,7 @@ function handleAddMessageToRatchet(
       if (!parsedContent.messages) parsedContent.messages = []
       parsedContent.messages = [...parsedContent.messages, ...messages]
       parsedContent.updatedAt = new Date().toISOString()
+      if (messages.length) parsedContent.lastMessage = messages[messages.length - 1].content
 
       fs.writeFileSync(filename, JSON.stringify(parsedContent), {
         encoding: 'utf8'
@@ -405,6 +414,52 @@ async function handleDecryptblob(
     const res = await decryptblob(new Blob([data], { type: mimeType }), randomKey)
 
     return Buffer.from(await res.arrayBuffer()).toString('base64')
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+async function handleDeleteMessage(
+  _e: Electron.IpcMainInvokeEvent,
+  receiver: string,
+  index: number
+) {
+  try {
+    const filename = CHAT_PREFIX + receiver + '.json'
+    const messages = handleGetMessagesByUsername(null as never, receiver)
+    messages[index].isDeleted = true
+    const fileContent = fs.readFileSync(filename, {
+      encoding: 'utf8'
+    })
+    const parsedContent = JSON.parse(fileContent)
+    if (parsedContent.messages.length - 1 === index) {
+      parsedContent.lastMessage = 'Tin nhắn đã bị xóa'
+    }
+
+    parsedContent.messages = messages
+    fs.writeFileSync(filename, JSON.stringify(parsedContent), {
+      encoding: 'utf8'
+    })
+  } catch (error) {
+    console.error('ERROR', error)
+  }
+}
+
+async function handleChangeConversationReaded(
+  _e: Electron.IpcMainInvokeEvent,
+  username: string,
+  isReaded: boolean
+) {
+  try {
+    const filename = CHAT_PREFIX + username + '.json'
+    const fileContent = fs.readFileSync(filename, {
+      encoding: 'utf8'
+    })
+    const parsedContent = JSON.parse(fileContent)
+    parsedContent.isReaded = isReaded
+    fs.writeFileSync(filename, JSON.stringify(parsedContent), {
+      encoding: 'utf8'
+    })
   } catch (error) {
     console.error('ERROR', error)
   }

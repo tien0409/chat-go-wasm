@@ -7,6 +7,7 @@ import useAuthStore from '../stores/useAuthStore'
 import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
 import uploadRepository from '../repositories/upload-repository'
 import { encryptblobBrowser } from '../crypto/cryptoLib'
+import IMessage from '../interfaces/IMessage'
 
 type MessageFormProps = {
   handleScroll: (content: string) => void
@@ -47,11 +48,12 @@ const MessageForm = (props: MessageFormProps) => {
         isBinary: res.isBinary
       })
     )
-    const newMessage = {
+    const newMessage: IMessage = {
       index: res.index,
       content: value,
       type: TEXT_TYPE,
-      sender: userInfo!.userName
+      sender: userInfo!.userName,
+      isDeleted: false
     }
 
     await window.api.addMessageToRatchet(currentConversation!, [newMessage])
@@ -64,6 +66,7 @@ const MessageForm = (props: MessageFormProps) => {
     const newConversations = [...conversations]
     newConversations[conversationIndex].lastMessage = value
     const temp = newConversations[conversationIndex]
+    temp.updatedAt = new Date().toISOString()
     newConversations.splice(conversationIndex, 1)
     newConversations.unshift(temp)
     setConversations(newConversations)
@@ -88,8 +91,6 @@ const MessageForm = (props: MessageFormProps) => {
       formData.set('upload', encryptedBlob)
       const res = await uploadRepository.uploadFile(formData)
       const chatType = mimeType.split('/')[0] === 'image' ? IMAGE_TYPE : VIDEO_TYPE
-      console.log("mimeType.split('/')[0]", mimeType.split('/')[0])
-      console.log('chatType', chatType)
 
       const resMsg = await window.sendMessage(currentRatchetId!, true, randomKey)
       websocket?.send(
@@ -103,13 +104,14 @@ const MessageForm = (props: MessageFormProps) => {
           isBinary: true
         })
       )
-      const newMessage = {
+      const newMessage: IMessage = {
         index: resMsg.index,
         content:
           chatType === IMAGE_TYPE ? 'Người dùng đã gửi một ảnh' : 'Người dùng đã gửi một video',
         filePath: randomKey + ':' + res.data.filePath + ':' + mimeType,
         type: chatType,
-        sender: userInfo!.userName
+        sender: userInfo!.userName,
+        isDeleted: false
       }
 
       await window.api.addMessageToRatchet(currentConversation!, [newMessage])
@@ -163,7 +165,7 @@ const MessageForm = (props: MessageFormProps) => {
           isBinary: true
         })
       )
-      const newMessage = {
+      const newMessage: IMessage = {
         index: resMsg.index,
         content: 'Người dùng đã gửi một tệp tin',
         filePath:
@@ -177,7 +179,8 @@ const MessageForm = (props: MessageFormProps) => {
           ':' +
           fileSize / 1024,
         type: FILE_TYPE,
-        sender: userInfo!.userName
+        sender: userInfo!.userName,
+        isDeleted: false
       }
 
       await window.api.addMessageToRatchet(currentConversation!, [newMessage])

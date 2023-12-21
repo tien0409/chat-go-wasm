@@ -1,6 +1,6 @@
 import Input from './Input'
-import { Phone, Video } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { ChevronDown, ChevronUp, Phone, Video } from 'lucide-react'
+import { FormEvent, useEffect, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
 import useConversationStore from '../stores/useConversationStore'
@@ -9,7 +9,13 @@ import callRepository from '../repositories/call-repository'
 import useAuthStore from '../stores/useAuthStore'
 import userRepository from '../repositories/user-repository'
 
-const MessageSearch = () => {
+type MessageSearchProps = {
+  handleScrollToMessage: (messageIndex: number) => void
+}
+
+const MessageSearch = (props: MessageSearchProps) => {
+  const { handleScrollToMessage } = props
+
   const { userInfo } = useAuthStore()
   const {
     typeCall,
@@ -21,12 +27,30 @@ const MessageSearch = () => {
     setVoipToken,
     setEncKey
   } = useCallStore()
-  const { currentConversation } = useConversationStore()
+  const {
+    messages,
+    currentConversation,
+    messageSearches,
+    currentIdxSearch,
+    setMessageSearches,
+    setCurrentIdxSearch
+  } = useConversationStore()
 
   const [searchValue, setSearchValue] = useState('')
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    const _messages = messages.filter((item) =>
+      item.content.toLowerCase().includes(searchValue.trim().toLowerCase())
+    )
+
+    if (messages.length) {
+      handleScrollToMessage(messages[0].index!)
+      setMessageSearches(_messages.map((item) => item.index!.toString()))
+    } else {
+      setMessageSearches([])
+    }
   }
 
   const handleAudioCall = async () => {
@@ -80,6 +104,10 @@ const MessageSearch = () => {
     }
   }
 
+  useEffect(() => {
+    setSearchValue('')
+  }, [currentConversation])
+
   return (
     <div
       className={clsx(
@@ -99,7 +127,13 @@ const MessageSearch = () => {
         </div>
       </div>
       <div className={clsx('flex gap-x-4 items-center', typeCall && 'w-full')}>
-        <form onSubmit={handleSearch} className={clsx(typeCall && 'w-full')}>
+        {!!messageSearches.length && (
+          <span className="text-xs text-gray-400">
+            {currentIdxSearch + 1}/{messageSearches.length}
+          </span>
+        )}
+
+        <form onSubmit={handleSearch} className={clsx('relative', typeCall && 'w-full')}>
           <Input
             wrapperClass="h-full"
             inputSize={'sm'}
@@ -107,6 +141,30 @@ const MessageSearch = () => {
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
+          {!!messageSearches.length && (
+            <>
+              <ChevronUp
+                size={14}
+                className="cursor-pointer absolute top-1/2 right-2 -translate-y-1/2"
+                onClick={() => {
+                  const newIdx =
+                    currentIdxSearch === 0 ? messageSearches.length - 1 : currentIdxSearch - 1
+                  setCurrentIdxSearch(newIdx)
+                  handleScrollToMessage(parseInt(messageSearches[newIdx]))
+                }}
+              />
+              <ChevronDown
+                size={14}
+                className="cursor-pointer absolute top-1/2 right-6 -translate-y-1/2"
+                onClick={() => {
+                  const newIdx =
+                    currentIdxSearch === messageSearches.length - 1 ? 0 : currentIdxSearch + 1
+                  setCurrentIdxSearch(newIdx)
+                  handleScrollToMessage(parseInt(messageSearches[newIdx]))
+                }}
+              />
+            </>
+          )}
           <button type="submit" hidden>
             submit
           </button>

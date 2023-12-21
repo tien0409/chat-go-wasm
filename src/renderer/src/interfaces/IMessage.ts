@@ -6,6 +6,7 @@ interface IMessage {
   type?: typeof TEXT_TYPE | typeof IMAGE_TYPE | typeof FILE_TYPE | typeof VIDEO_TYPE
   filePath?: string
   sender: string
+  isDeleted: boolean
 }
 
 export default IMessage

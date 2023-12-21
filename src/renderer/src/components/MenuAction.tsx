@@ -7,6 +7,7 @@ import { useState } from 'react'
 import ChangeAvatarModal from './ChangeAvatarModal'
 import useWebSocketStore from '../stores/useWebSocketStore'
 import useAuthStore from '../stores/useAuthStore'
+import useConversationStore from '../stores/useConversationStore'
 
 type MenuActionProps = {
   isMenuOpen: boolean
@@ -18,6 +19,7 @@ const MenuAction = (props: MenuActionProps) => {
 
   const navigate = useNavigate()
   const { removeSocket } = useWebSocketStore()
+  const { setCurrentConversation, setCurrentRatchetId } = useConversationStore()
   const { userInfo, setAuthToken } = useAuthStore()
 
   const [isOpenChangeAvatar, setIsOpenChangeAvatar] = useState(false)
@@ -25,6 +27,8 @@ const MenuAction = (props: MenuActionProps) => {
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     setAuthToken('')
+    setCurrentConversation(null)
+    setCurrentRatchetId(null)
     removeSocket()
     navigate(SIGN_IN_PAGE)
   }

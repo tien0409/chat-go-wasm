@@ -13,8 +13,16 @@ type ConversationItemProps = {
 const ConversationItem = (props: ConversationItemProps) => {
   const { conversation } = props
 
-  const { currentConversation, setCurrentRatchetId, setMessages, setCurrentConversation } =
-    useConversationStore()
+  const {
+    currentConversation,
+    setConversations,
+    conversations,
+    setCurrentRatchetId,
+    setMessages,
+    setCurrentConversation,
+    setMessageSearches,
+    setCurrentIdxSearch
+  } = useConversationStore()
 
   const createRatchet = async () => {
     const res = await userRepository.getExternalUserKey(conversation.receiver)
@@ -36,6 +44,18 @@ const ConversationItem = (props: ConversationItemProps) => {
   const handleSelectConversation = async () => {
     try {
       setCurrentConversation(conversation.receiver)
+      setConversations(
+        conversations.map((item) => {
+          if (item.receiver === conversation.receiver) {
+            return {
+              ...item,
+              isReaded: true
+            }
+          }
+          return item
+        })
+      )
+
       const oldMessages = await window.api.getMessagesByUsername(conversation.receiver)
       const res = await chatRepository.getPendingChatMessage(conversation.id)
 
@@ -61,7 +81,8 @@ const ConversationItem = (props: ConversationItemProps) => {
             index: item.index,
             sender: item.sender,
             filePath: item.filePath,
-            type: item.type
+            type: item.type,
+            isDeleted: item.isDeleted
           }) as IMessage
       )
       for (let i = 0; i < res?.data?.length; i++) {
@@ -80,12 +101,16 @@ const ConversationItem = (props: ConversationItemProps) => {
           index: item.index,
           sender: item.senderUsername,
           type: item.type,
-          filePath: item.filePath
+          filePath: item.filePath,
+          isDeleted: item.isDeleted
         })
       }
       isNewConversation &&
         (await window.api.addMessageToRatchet(conversation.receiver, newMessages))
+      await window.api.changeConversationReaded(conversation.receiver, true)
 
+      setCurrentIdxSearch(0)
+      setMessageSearches([])
       setMessages(newMessages)
       setCurrentRatchetId(ratchetId)
     } catch (error) {
@@ -97,6 +122,7 @@ const ConversationItem = (props: ConversationItemProps) => {
     <div
       className={clsx(
         'border-b cursor-pointer flex gap-x-3 justify-between hover:bg-black/10 w-full p-3 items-center',
+        conversation.isReaded === false && 'bg-black/10 !font-medium',
         currentConversation === conversation.receiver && 'bg-yellow-50/80'
       )}
       onClick={handleSelectConversation}

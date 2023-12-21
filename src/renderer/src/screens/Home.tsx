@@ -30,12 +30,15 @@ const HomeScreen = () => {
     try {
       // init chat
       const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
-      const newConversations: IConversation[] = oldChatSessions.map((item) => ({
-        lastMessage: item.lastMessage,
-        receiver: item.receiver,
-        id: item.ratchetId,
-        updatedAt: item.updatedAt
-      }))
+      const newConversations: IConversation[] = oldChatSessions
+        .filter((item) => item.lastMessage)
+        .map<IConversation>((item) => ({
+          lastMessage: item.lastMessage,
+          receiver: item.receiver,
+          id: item.ratchetId,
+          updatedAt: item.updatedAt,
+          isReaded: item.isReaded
+        }))
 
       // get pending chat session
       const res = await chatRepository.getPendingChatSession()
@@ -58,7 +61,9 @@ const HomeScreen = () => {
           newConversations.push({
             lastMessage: 'Đang chờ phản hồi',
             receiver: item.senderUserName,
-            id: item.chatSessionId
+            id: item.chatSessionId,
+            updatedAt: item.updatedAt || new Date().toISOString(),
+            isReaded: false
           })
         }
         setConversations(newConversations)

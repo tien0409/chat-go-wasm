@@ -34,7 +34,11 @@ const api = {
   addMessageToRatchet: (receiver: string, messages: string) =>
     ipcRenderer.invoke('r_addMessageToRatchet', receiver, messages),
   getMessagesByUsername: (username: string) =>
-    ipcRenderer.invoke('r_getMessagesByUsername', username)
+    ipcRenderer.invoke('r_getMessagesByUsername', username),
+  deleteMessage: (receiver: string, index: number) =>
+    ipcRenderer.invoke('r_deleteMessage', receiver, index),
+  changeConversationReaded: (username: string, isReaded: boolean) =>
+    ipcRenderer.invoke('r_changeConversationReaded', username, isReaded)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
