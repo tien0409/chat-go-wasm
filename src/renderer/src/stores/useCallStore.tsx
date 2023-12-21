@@ -21,6 +21,8 @@ type IVideoCallStore = {
   encKey: string | null
   setEncKey: (value: string | null) => void
   turnOffCall: () => void
+  initCallType: string | null
+  setInitCallType: (type: 'FROM_CALLER' | 'FROM_RECIEVER') => void
 }
 
 const useCallStore = create<IVideoCallStore>((set, getState) => ({
@@ -51,6 +53,8 @@ const useCallStore = create<IVideoCallStore>((set, getState) => ({
   setEnableVideo: (value: boolean) => set(() => ({ enableVideo: value })),
   encKey: null,
   setEncKey: (value: string | null) => set(() => ({ encKey: value })),
+  initCallType: null,
+  setInitCallType: (value: 'FROM_CALLER' | 'FROM_RECIEVER') => set(() => ({ initCallType: value })),
   turnOffCall: () => set(() => ({ typeCall: null, enableAudio: false, enableVideo: false }))
 }))
 

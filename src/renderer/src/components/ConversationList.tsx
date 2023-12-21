@@ -27,7 +27,8 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
-  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken, setEncKey } = useCallStore()
+  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken, setEncKey, setInitCallType } =
+    useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -141,7 +142,7 @@ const ConversationList = () => {
         case ACCEPT_CALL_EVENT: {
           setStatus('on-call')
           initWS('FROM_CALLER')
-          break
+          setInitCallType('FROM_CALLER')
         }
       }
     }

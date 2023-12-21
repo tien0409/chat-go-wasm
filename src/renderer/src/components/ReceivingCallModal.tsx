@@ -14,7 +14,8 @@ const ReceivingCallModal = () => {
     typeCall,
     setTypeCall,
     setCaller,
-    initWS
+    initWS,
+    setInitCallType
   } = useCallStore()
   const { userInfo } = useAuthStore()
   const { websocket } = useWebSocketStore()
@@ -31,6 +32,7 @@ const ReceivingCallModal = () => {
     setEnableAudio(typeCall === 'audio')
     setEnableVideo(typeCall === 'video')
     initWS('FROM_RECIEVER')
+    setInitCallType('FROM_RECIEVER')
   }
 
   const handleReject = () => {
