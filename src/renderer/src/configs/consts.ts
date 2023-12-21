@@ -26,5 +26,5 @@ export const ACCEPT_CALL_EVENT = 'CHAT_ACCEPT'
 
 export const AVATAR_DEFAULT = 'https://source.unsplash.com/RZrIJ8C0860'
 
-export const VIDEO_MIME_TYPE = 'video/webm;codecs=vp8,opus'
+export const VIDEO_MIME_TYPE = 'video/webm; codecs="opus,vp8"'
 export const AUDIO_MIME_TYPE = 'audio/webm;codecs=opus'

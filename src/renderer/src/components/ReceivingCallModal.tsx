@@ -29,8 +29,13 @@ const ReceivingCallModal = () => {
       })
     )
     setStatus('on-call')
-    setEnableAudio(typeCall === 'audio')
-    setEnableVideo(typeCall === 'video')
+    if (typeCall == 'video') {
+      setEnableAudio(true)
+      setEnableVideo(true)
+    } else {
+      setEnableAudio(true)
+      setEnableVideo(false)
+    }
     initWS('FROM_RECIEVER')
     setInitCallType('FROM_RECIEVER')
   }
@@ -57,7 +62,7 @@ const ReceivingCallModal = () => {
             <img className="w-14 rounded-full h-14" src={AVATAR_DEFAULT} />
           </div>
           {caller === userInfo!.userName ? (
-            <div>I'm caller</div>
+            <div>Đang gọi...</div>
           ) : (
             <>
               <p className="text-center">

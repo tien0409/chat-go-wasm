@@ -27,8 +27,17 @@ const ConversationList = () => {
     setConversations
   } = useConversationStore()
   const { websocket } = useWebSocketStore()
-  const { setStatus, setTypeCall, setCaller, initWS, setVoipToken, setEncKey, setInitCallType } =
-    useCallStore()
+  const {
+    setStatus,
+    setTypeCall,
+    setCaller,
+    initWS,
+    setVoipToken,
+    setEncKey,
+    setInitCallType,
+    setEnableAudio,
+    setEnableVideo
+  } = useCallStore()
 
   // eslint-disable-next-line
   const createRatchet = useCallback(async (additionalData: any, senderUserName: string) => {
@@ -107,8 +116,11 @@ const ConversationList = () => {
         }
 
         case CHAT_AUDIO_EVENT: {
+          console.log('voice call comming')
           setStatus('receiving-call')
           setTypeCall('audio')
+          setEnableAudio(true)
+          setEnableVideo(false)
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
           const res = await userRepository.getExternalUserKey(data.senderUsername)
@@ -123,8 +135,11 @@ const ConversationList = () => {
         }
 
         case CHAT_VIDEO_EVENT: {
+          console.log('video call comming')
           setStatus('receiving-call')
           setTypeCall('video')
+          setEnableAudio(true)
+          setEnableVideo(true)
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
           const res = await userRepository.getExternalUserKey(data.senderUsername)
