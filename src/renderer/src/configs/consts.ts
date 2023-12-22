@@ -22,6 +22,7 @@ export const MESSAGE_EVENT = 'CHAT_TEXT'
 export const CHAT_NEW_EVENT = 'CHAT_NEW'
 export const CHAT_CLOSE = 'CHAT_CLOSE'
 export const CHAT_VIDEO_EVENT = 'CHAT_VIDEO'
+export const CALL_VIDEO_EVENT = 'CALL_VIDEO'
 export const CHAT_AUDIO_EVENT = 'CHAT_AUDIO'
 export const ACCEPT_CALL_EVENT = 'CHAT_ACCEPT'
 

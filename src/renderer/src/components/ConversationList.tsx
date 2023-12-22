@@ -4,11 +4,13 @@ import useWebSocketStore from '../stores/useWebSocketStore'
 import { useCallback, useEffect } from 'react'
 import {
   ACCEPT_CALL_EVENT,
+  CALL_VIDEO_EVENT,
   CHAT_AUDIO_EVENT,
   CHAT_CLOSE,
   CHAT_NEW_EVENT,
-  CHAT_VIDEO_EVENT,
-  MESSAGE_EVENT
+  IMAGE_TYPE,
+  MESSAGE_EVENT,
+  VIDEO_TYPE
 } from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
 import { toast } from 'react-toastify'
@@ -57,6 +59,7 @@ const ConversationList = () => {
     if (!websocket) return
     websocket.onmessage = async (msg) => {
       const data = JSON.parse(msg.data)
+      console.log('data', data)
       switch (data.type) {
         case CHAT_NEW_EVENT: {
           const newConversation: IConversation = {
@@ -72,21 +75,28 @@ const ConversationList = () => {
           break
         }
 
-        case MESSAGE_EVENT: {
-          const content = await window.receiveMessage(
-            JSON.stringify({
-              chatSessionId: data.chatSessionId,
-              index: data.index,
-              cipherMessage: data.cipherMessage,
-              isBinary: data.isBinary
-            })
-          )
+        case MESSAGE_EVENT:
+        case IMAGE_TYPE:
+        case VIDEO_TYPE: {
+          let content = ''
+          if (data.type === IMAGE_TYPE) content = 'Người dùng đã gửi ảnh'
+          else if (data.type === VIDEO_TYPE) content = 'Người dùng đã gửi video'
+          else
+            content = await window.receiveMessage(
+              JSON.stringify({
+                chatSessionId: data.chatSessionId,
+                index: data.index,
+                cipherMessage: data.cipherMessage,
+                isBinary: data.isBinary
+              })
+            )
 
           const newMessage: IMessage = {
             index: data.index,
             content: content,
             type: data.type,
             sender: data.senderUsername,
+            filePath: data.filePath,
             isDeleted: false
           }
 
@@ -136,7 +146,7 @@ const ConversationList = () => {
           break
         }
 
-        case CHAT_VIDEO_EVENT: {
+        case CALL_VIDEO_EVENT: {
           console.log('video call comming')
           setStatus('receiving-call')
           setTypeCall('video')

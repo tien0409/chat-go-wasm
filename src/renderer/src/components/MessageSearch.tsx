@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import clsx from 'clsx'
 import useConversationStore from '../stores/useConversationStore'
-import { CHAT_AUDIO_EVENT, CHAT_VIDEO_EVENT } from '../configs/consts'
+import { CALL_VIDEO_EVENT, CHAT_AUDIO_EVENT } from '../configs/consts'
 import callRepository from '../repositories/call-repository'
 import useAuthStore from '../stores/useAuthStore'
 import userRepository from '../repositories/user-repository'
@@ -86,7 +86,7 @@ const MessageSearch = (props: MessageSearchProps) => {
       )
       const res = await callRepository.initVOIP(
         currentConversation!,
-        CHAT_VIDEO_EVENT,
+        CALL_VIDEO_EVENT,
         initRatchetRes.ephemeralKey
       )
       const ratchetInfo = await window.saveRatchet(initRatchetRes.ratchetId)
