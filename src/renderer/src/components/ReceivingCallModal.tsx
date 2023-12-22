@@ -3,6 +3,8 @@ import useCallStore from '../stores/useCallStore'
 import { Phone, X } from 'lucide-react'
 import useAuthStore from '../stores/useAuthStore'
 import useWebSocketStore from '../stores/useWebSocketStore'
+import IMessage from '../interfaces/IMessage'
+import useConversationStore from '../stores/useConversationStore'
 
 const ReceivingCallModal = () => {
   const {
@@ -17,8 +19,59 @@ const ReceivingCallModal = () => {
     initWS,
     setInitCallType
   } = useCallStore()
+  const {
+    setCurrentIdxSearch,
+    setMessageSearches,
+    setCurrentRatchetId,
+    setMessages,
+    conversations,
+    setCurrentConversation,
+    setConversations
+  } = useConversationStore()
   const { userInfo } = useAuthStore()
   const { websocket } = useWebSocketStore()
+
+  const handleJoinConversation = async () => {
+    try {
+      console.log('caller', caller)
+      setCurrentConversation(caller)
+      setConversations(
+        conversations.map((item) => {
+          if (item.receiver === caller) {
+            return {
+              ...item,
+              isReaded: true
+            }
+          }
+          return item
+        })
+      )
+
+      const oldMessages = await window.api.getMessagesByUsername(caller!)
+
+      const ratchetId = await window.api.getRatchetId(caller!)
+
+      const newMessages: IMessage[] = oldMessages.map(
+        (item) =>
+          ({
+            content: item.content,
+            index: item.index,
+            sender: item.sender,
+            filePath: item.filePath,
+            type: item.type,
+            isDeleted: item.isDeleted
+          }) as IMessage
+      )
+      await window.api.changeConversationReaded(caller!, true)
+
+      setCurrentIdxSearch(0)
+      setMessageSearches([])
+      setMessages(newMessages)
+      setCurrentRatchetId(ratchetId)
+    } catch (error) {
+      console.error('ERROR', error)
+    }
+  }
 
   const handleAccept = () => {
     websocket!.send(
@@ -28,6 +81,7 @@ const ReceivingCallModal = () => {
         senderUsername: userInfo?.userName
       })
     )
+    handleJoinConversation()
     setStatus('on-call')
     if (typeCall == 'video') {
       setEnableAudio(true)

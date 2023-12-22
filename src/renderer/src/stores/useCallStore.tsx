@@ -38,6 +38,9 @@ const useCallStore = create<IVideoCallStore>((set, getState) => ({
     ws.onopen = () => {
       console.log('SenderVOIP Connected')
     }
+    ws.onclose = () => {
+      console.log('SenderVOIP Disconnected')
+    }
   },
   voipToken: null,
   setVoipToken: (value: string | null) => set(() => ({ voipToken: value })),
@@ -55,7 +58,23 @@ const useCallStore = create<IVideoCallStore>((set, getState) => ({
   setEncKey: (value: string | null) => set(() => ({ encKey: value })),
   initCallType: null,
   setInitCallType: (value: 'FROM_CALLER' | 'FROM_RECIEVER') => set(() => ({ initCallType: value })),
-  turnOffCall: () => set(() => ({ typeCall: null, enableAudio: false, enableVideo: false }))
+  turnOffCall: () => {
+    if (getState().myWS) {
+      console.log('getState().myWS', getState().myWS)
+      getState().myWS!.close()
+      set(() => ({ myWS: null }))
+    }
+    set(() => ({
+      voipToken: null,
+      status: 'idle',
+      caller: null,
+      typeCall: null,
+      enableAudio: false,
+      enableVideo: false,
+      encKey: null,
+      initCallType: null
+    }))
+  }
 }))
 
 export default useCallStore

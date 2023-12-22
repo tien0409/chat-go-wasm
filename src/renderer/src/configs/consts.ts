@@ -1,8 +1,8 @@
-export const API_URL = 'http://192.168.1.77:7777'
+export const API_URL = 'https://8f2e-171-251-90-158.ngrok-free.app'
 export const IMAGE_URL = API_URL + '/api/v1/file/get?fileId='
-export const SOCKET_URL = 'ws://192.168.1.77:7777'
+export const SOCKET_URL = 'wss://8f2e-171-251-90-158.ngrok-free.app'
 export const WS_CALL_URL =
-  'ws://192.168.1.77:7777/voip?voipSession={{voipToken}}&connType={{connType}}'
+  'wss://8f2e-171-251-90-158.ngrok-free.app/voip?voipSession={{voipToken}}&connType={{connType}}'
 
 export const ACCESS_TOKEN_KEY = 'access_token'
 

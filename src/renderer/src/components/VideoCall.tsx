@@ -1,13 +1,12 @@
 import clsx from 'clsx'
-import { ChevronLeft, ChevronRight, Mic, MicOff, Phone, Video, VideoOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import { decryptblobVoip, encryptblobVoip } from '../crypto/cryptoLib'
 import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
 
 const VideoCall = () => {
-  const { enableVideo, enableAudio, myWS, encKey, setEnableVideo, setEnableAudio, turnOffCall } =
-    useCallStore()
+  const { enableVideo, enableAudio, myWS, encKey, turnOffCall } = useCallStore()
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -15,7 +14,7 @@ const VideoCall = () => {
 
   const localStream = true
   const remoteStream = true
-  let localRecorder: MediaRecorder
+  let localRecorder: MediaRecorder | null
 
   // LOCAL
   const All_mediaDevices = navigator.mediaDevices
@@ -30,9 +29,9 @@ const VideoCall = () => {
   let remoteSrcBuffer: SourceBuffer
 
   useEffect(() => {
-    if (!myWS || !encKey) return
+    if (!myWS || !encKey || (myWS && myWS.readyState === myWS.OPEN)) return
+
     const ENC_KEY = encKey.substring(0, 16)
-    console.log(ENC_KEY)
     const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
 
     // LOCAL setup
@@ -47,6 +46,22 @@ const VideoCall = () => {
           })
           localRecorder.ondataavailable = (event) => {
             encryptblobVoip(event.data, ENC_KEY).then((result) => {
+              if (myWS.readyState === myWS.CLOSED || myWS.readyState === myWS.CLOSING) {
+                vidStream.getVideoTracks()?.forEach((track) => {
+                  track.enabled = false
+                  track.stop()
+                })
+                vidStream.getAudioTracks()?.forEach((track) => {
+                  track.enabled = false
+                  track.stop()
+                })
+                localRecorder = null
+                myWS.close()
+                return
+              }
+              if (myWS.readyState === myWS.CONNECTING) return
+              console.log('myWS', myWS)
+
               myWS.send(result)
             })
           }
@@ -133,13 +148,18 @@ const VideoCall = () => {
       )}
 
       <div className="absolute z-10 bottom-10 left-1/2 flex gap-x-8 -translate-x-1/2">
-        <span className="cursor-pointer" onClick={() => setEnableAudio(!enableAudio)}>
-          {enableAudio ? <Mic size={30} /> : <MicOff size={30} />}
-        </span>
-        <span className="cursor-pointer" onClick={() => setEnableVideo(!enableVideo)}>
-          {enableVideo ? <Video size={30} /> : <VideoOff size={30} />}
-        </span>
-        <Phone className="cursor-pointer" size={30} onClick={() => turnOffCall()} />
+        {/*<span className="cursor-pointer" onClick={() => setEnableAudio(!enableAudio)}>*/}
+        {/*  {enableAudio ? <Mic size={30} /> : <MicOff size={30} />}*/}
+        {/*</span>*/}
+        {/*<span className="cursor-pointer" onClick={() => setEnableVideo(!enableVideo)}>*/}
+        {/*  {enableVideo ? <Video size={30} /> : <VideoOff size={30} />}*/}
+        {/*</span>*/}
+        <div
+          className="w-12 flex cursor-pointer items-center justify-center h-12 rounded-full bg-red-500"
+          onClick={() => turnOffCall()}
+        >
+          <Phone className="text-white" size={20} />
+        </div>
       </div>
 
       <ChevronLeft
