@@ -280,6 +280,7 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
     lastMessage: string
     updatedAt: string
     isReaded: boolean
+    messages: IMessage[]
   }[] = []
   try {
     const chatFilenames = fs
@@ -300,7 +301,8 @@ function handleGetOldChatSessions(_e: Electron.IpcMainInvokeEvent, currentUserna
         receiver: chatFilename.replace(CHAT_PREFIX, '').replace('.json', ''),
         ratchetId: JSON.parse(content).ratchetId,
         updatedAt: parsedContent.updatedAt,
-        isReaded: parsedContent.isReaded || false
+        isReaded: parsedContent.isReaded || false,
+        messages: parsedContent.messages || []
       })
     }
     result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())

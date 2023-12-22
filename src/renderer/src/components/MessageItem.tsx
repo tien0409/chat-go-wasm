@@ -72,7 +72,6 @@ const MessageItem = (props: MessageItemProps) => {
   }
 
   useEffect(() => {
-    console.log('message', message)
     if (message.type !== TEXT_TYPE && message.filePath) {
       ;(async function () {
         const [randomKey, filePath, , filename, fileSize] = message.filePath!.split(':')
@@ -80,7 +79,6 @@ const MessageItem = (props: MessageItemProps) => {
         const responseBlob = await res.data
         const decryptedData = await decryptblobBrowser(responseBlob, randomKey)
         const url = URL.createObjectURL(decryptedData)
-        console.log('url', url)
         setContent(url)
 
         if (message.type === FILE_TYPE) {
@@ -150,7 +148,7 @@ const MessageItem = (props: MessageItemProps) => {
                 <video src={content} key={content} className="object-cover" controls />
               )}
               {message.type === FILE_TYPE && content && (
-                <a href={filename} className="flex gap-x-4 max-w-[400px]" download>
+                <a href={content} className="flex gap-x-4 max-w-[400px]" download={filename}>
                   <File size={40} />
                   <div className="flex flex-col">
                     <span>{filename}</span>
