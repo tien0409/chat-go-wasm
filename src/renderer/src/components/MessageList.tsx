@@ -15,7 +15,7 @@ const MessageList = (props: MessageListProps) => {
   const { messages, chatAction, setChatAction } = useConversationStore()
   const { websocket } = useWebSocketStore()
 
-  const [isBottom, setIsBottom] = useState(false)
+  const [isBottom, setIsBottom] = useState(true)
 
   const handleScroll = (e: MouseEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget
@@ -70,7 +70,7 @@ const MessageList = (props: MessageListProps) => {
       ))}
       {!isBottom && (
         <div
-          className="w-10 rounded-full flex items-center justify-center cursor-pointer bg-white h-10 border absolute bottom-20 left-1/2"
+          className="w-10 rounded-full flex items-center justify-center cursor-pointer bg-white h-10 border absolute bottom-10 transition-all left-1/2"
           onClick={handleScrollBottom}
         >
           <MoveDown />

@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react'
 import Input from './Input'
-import { FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import MenuAction from './MenuAction'
 import _uniqWith from 'lodash/uniqWith'
 import _intersectionWith from 'lodash/intersectionWith'
@@ -70,6 +70,24 @@ const ConversationSearch = () => {
     }
   }
 
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value.trim())
+    if (e.target.value.trim() === '') {
+      const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
+      const newConversations = oldChatSessions
+        .map((item) => ({
+          lastMessage: item.lastMessage,
+          receiver: item.receiver,
+          id: item.ratchetId,
+          updatedAt: item.updatedAt
+        }))
+        .sort((a, b) => {
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        })
+      setConversations(newConversations)
+    }
+  }
+
   return (
     <div className="flex gap-x-4 p-4 items-center">
       <Menu className="cursor-pointer" onClick={() => setIsMenuOpen(true)} />
@@ -81,7 +99,7 @@ const ConversationSearch = () => {
           inputSize={'sm'}
           placeholder="Search..."
           value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
+          onInput={handleChange}
         />
         <button type="submit" hidden>
           submit
