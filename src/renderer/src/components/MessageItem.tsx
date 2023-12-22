@@ -142,10 +142,20 @@ const MessageItem = (props: MessageItemProps) => {
                 </p>
               )}
               {message.type === IMAGE_TYPE && content && (
-                <img alt={'loading'} key={content} src={content} className="object-cover" />
+                <img
+                  alt={'loading'}
+                  key={content}
+                  src={content}
+                  className="object-cover max-w-[100px]"
+                />
               )}
               {message.type === VIDEO_TYPE && content && (
-                <video src={content} key={content} className="object-cover" controls />
+                <video
+                  src={content}
+                  key={content}
+                  className="object-cover max-w-[300px]"
+                  controls
+                />
               )}
               {message.type === FILE_TYPE && content && (
                 <a href={content} className="flex gap-x-4 max-w-[400px]" download={filename}>
