@@ -29,7 +29,7 @@ const VideoCall = () => {
   let remoteSrcBuffer: SourceBuffer
 
   useEffect(() => {
-    if (!myWS || !encKey || (myWS && myWS.readyState === myWS.OPEN)) return
+    if (!myWS || !encKey) return
 
     const ENC_KEY = encKey.substring(0, 16)
     const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
@@ -42,24 +42,25 @@ const VideoCall = () => {
       .then(function (vidStream) {
         if (localRecorder == null) {
           localRecorder = new MediaRecorder(vidStream, {
-            mimeType: mimeType
+            mimeType
           })
           localRecorder.ondataavailable = (event) => {
             encryptblobVoip(event.data, ENC_KEY).then((result) => {
               if (myWS.readyState === myWS.CLOSED || myWS.readyState === myWS.CLOSING) {
-                vidStream.getVideoTracks()?.forEach((track) => {
-                  track.enabled = false
-                  track.stop()
-                })
-                vidStream.getAudioTracks()?.forEach((track) => {
-                  track.enabled = false
-                  track.stop()
-                })
+                if (enableVideo)
+                  vidStream.getVideoTracks()?.forEach((track) => {
+                    track.enabled = false
+                    track.stop()
+                  })
+                if (enableAudio)
+                  vidStream.getAudioTracks()?.forEach((track) => {
+                    track.enabled = false
+                    track.stop()
+                  })
                 localRecorder = null
                 myWS.close()
                 return
               }
-              if (myWS.readyState === myWS.CONNECTING) return
               console.log('myWS', myWS)
 
               myWS.send(result)

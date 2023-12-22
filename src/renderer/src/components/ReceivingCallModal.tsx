@@ -33,7 +33,6 @@ const ReceivingCallModal = () => {
 
   const handleJoinConversation = async () => {
     try {
-      console.log('caller', caller)
       setCurrentConversation(caller)
       setConversations(
         conversations.map((item) => {
