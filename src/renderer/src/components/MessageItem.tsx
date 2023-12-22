@@ -150,7 +150,7 @@ const MessageItem = (props: MessageItemProps) => {
                 <video src={content} key={content} className="object-cover" controls />
               )}
               {message.type === FILE_TYPE && content && (
-                <a href={content} className="flex gap-x-4 max-w-[400px]">
+                <a href={content} className="flex gap-x-4 max-w-[400px]" download>
                   <File size={40} />
                   <div className="flex flex-col">
                     <span>{filename}</span>
