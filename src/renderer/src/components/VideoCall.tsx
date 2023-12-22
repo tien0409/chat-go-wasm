@@ -3,10 +3,14 @@ import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import useCallStore from '../stores/useCallStore'
 import { decryptblobVoip, encryptblobVoip } from '../crypto/cryptoLib'
-import { AUDIO_MIME_TYPE, VIDEO_MIME_TYPE } from '../configs/consts'
+import { AUDIO_MIME_TYPE, CHAT_CLOSE, VIDEO_MIME_TYPE } from '../configs/consts'
+import useWebSocketStore from '../stores/useWebSocketStore'
+import useAuthStore from '../stores/useAuthStore'
 
 const VideoCall = () => {
-  const { enableVideo, enableAudio, myWS, encKey, turnOffCall } = useCallStore()
+  const { caller, enableVideo, enableAudio, myWS, encKey, turnOffCall } = useCallStore()
+  const { websocket } = useWebSocketStore()
+  const { userInfo } = useAuthStore()
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -28,11 +32,24 @@ const VideoCall = () => {
   const remoteArrayBuffer: ArrayBuffer[] = []
   let remoteSrcBuffer: SourceBuffer
 
+  const handleOffCall = () => {
+    websocket!.send(
+      JSON.stringify({
+        type: CHAT_CLOSE,
+        plainMessage: caller,
+        senderUsername: userInfo?.userName
+      })
+    )
+    turnOffCall()
+  }
+
   useEffect(() => {
     if (!myWS || !encKey) return
 
     const ENC_KEY = encKey.substring(0, 16)
     const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
+    console.log('mimeType', mimeType)
+    console.log('enableAudio', enableAudio)
 
     // LOCAL setup
     All_mediaDevices.getUserMedia({
@@ -61,7 +78,8 @@ const VideoCall = () => {
                 myWS.close()
                 return
               }
-              console.log('myWS', myWS)
+              if (myWS.readyState === myWS.CONNECTING) return
+              // console.log('myWS', myWS)
 
               myWS.send(result)
             })
@@ -157,7 +175,7 @@ const VideoCall = () => {
         {/*</span>*/}
         <div
           className="w-12 flex cursor-pointer items-center justify-center h-12 rounded-full bg-red-500"
-          onClick={() => turnOffCall()}
+          onClick={handleOffCall}
         >
           <Phone className="text-white" size={20} />
         </div>

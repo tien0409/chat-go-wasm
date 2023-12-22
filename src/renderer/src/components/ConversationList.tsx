@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react'
 import {
   ACCEPT_CALL_EVENT,
   CHAT_AUDIO_EVENT,
+  CHAT_CLOSE,
   CHAT_NEW_EVENT,
   CHAT_VIDEO_EVENT,
   MESSAGE_EVENT
@@ -36,7 +37,8 @@ const ConversationList = () => {
     setEncKey,
     setInitCallType,
     setEnableAudio,
-    setEnableVideo
+    setEnableVideo,
+    turnOffCall
   } = useCallStore()
 
   // eslint-disable-next-line
@@ -158,6 +160,12 @@ const ConversationList = () => {
           setStatus('on-call')
           initWS('FROM_CALLER')
           setInitCallType('FROM_CALLER')
+          break
+        }
+
+        case CHAT_CLOSE: {
+          turnOffCall()
+          break
         }
       }
     }
