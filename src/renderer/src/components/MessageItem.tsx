@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { File, Trash } from 'lucide-react'
 import IMessage from '../interfaces/IMessage'
-import { memo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import useAuthStore from '../stores/useAuthStore'
 import { FILE_TYPE, IMAGE_TYPE, TEXT_TYPE, VIDEO_TYPE } from '../configs/consts'
 import uploadRepository from '../repositories/upload-repository'
@@ -26,9 +26,7 @@ const MessageItem = (props: MessageItemProps) => {
     setConversations
   } = useConversationStore()
 
-  const [content, setContent] = useState(
-    message.type === TEXT_TYPE ? message.content : 'loading...'
-  )
+  const [content, setContent] = useState(message.type === TEXT_TYPE ? message.content : '')
   const [filename, setFileName] = useState('')
   const [fileSize, setFileSize] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -74,6 +72,7 @@ const MessageItem = (props: MessageItemProps) => {
   }
 
   useEffect(() => {
+    console.log('message', message)
     if (message.type !== TEXT_TYPE && message.filePath) {
       ;(async function () {
         const [randomKey, filePath, , filename, fileSize] = message.filePath!.split(':')
@@ -81,6 +80,7 @@ const MessageItem = (props: MessageItemProps) => {
         const responseBlob = await res.data
         const decryptedData = await decryptblobBrowser(responseBlob, randomKey)
         const url = URL.createObjectURL(decryptedData)
+        console.log('url', url)
         setContent(url)
 
         if (message.type === FILE_TYPE) {
@@ -90,9 +90,11 @@ const MessageItem = (props: MessageItemProps) => {
       })()
     }
   }, [message])
+  console.log('content', content)
 
   return (
     <div
+      key={content}
       id={message.index!.toString()}
       className={clsx('flex gap-x-3 group', isSender ? 'flex-row-reverse' : 'items-start')}
     >
@@ -118,11 +120,7 @@ const MessageItem = (props: MessageItemProps) => {
         </div>
       )}
 
-      <img
-        src="https://source.unsplash.com/RZrIJ8C0860"
-        alt="image"
-        className="w-10 h-10 rounded-full"
-      />
+      <img src={userInfo!.avatar} alt="image" className="w-10 h-10 rounded-full" />
       <div className={clsx('flex items-center gap-x-4', isSender && 'flex-row-reverse')}>
         <div
           className={clsx(
@@ -145,11 +143,13 @@ const MessageItem = (props: MessageItemProps) => {
                   {content}
                 </p>
               )}
-              {message.type === IMAGE_TYPE && <img src={content} className="object-cover" />}
-              {message.type === VIDEO_TYPE && (
-                <video src={content} className="object-cover" controls />
+              {message.type === IMAGE_TYPE && content && (
+                <img alt={'loading'} key={content} src={content} className="object-cover" />
               )}
-              {message.type === FILE_TYPE && (
+              {message.type === VIDEO_TYPE && content && (
+                <video src={content} key={content} className="object-cover" controls />
+              )}
+              {message.type === FILE_TYPE && content && (
                 <a href={content} className="flex gap-x-4 max-w-[400px]">
                   <File size={40} />
                   <div className="flex flex-col">
@@ -172,4 +172,4 @@ const MessageItem = (props: MessageItemProps) => {
   )
 }
 
-export default memo(MessageItem)
+export default MessageItem

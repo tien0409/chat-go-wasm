@@ -8,6 +8,7 @@ import {
   CHAT_AUDIO_EVENT,
   CHAT_CLOSE,
   CHAT_NEW_EVENT,
+  FILE_TYPE,
   IMAGE_TYPE,
   MESSAGE_EVENT,
   VIDEO_TYPE
@@ -77,7 +78,8 @@ const ConversationList = () => {
 
         case MESSAGE_EVENT:
         case IMAGE_TYPE:
-        case VIDEO_TYPE: {
+        case VIDEO_TYPE:
+        case FILE_TYPE: {
           let content = ''
           if (data.type === IMAGE_TYPE) content = 'Người dùng đã gửi ảnh'
           else if (data.type === VIDEO_TYPE) content = 'Người dùng đã gửi video'
@@ -113,6 +115,7 @@ const ConversationList = () => {
           const newConversations = [...conversations]
           if (!newConversations[conversationIndex]) return
           newConversations[conversationIndex].lastMessage = content
+          console.log('content', content)
 
           const temp = newConversations[conversationIndex]
           temp.isReaded = temp.id === currentRatchetId

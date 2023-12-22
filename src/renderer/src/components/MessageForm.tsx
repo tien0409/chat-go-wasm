@@ -97,6 +97,7 @@ const MessageForm = (props: MessageFormProps) => {
         JSON.stringify({
           type: chatType,
           senderUsername: userInfo?.userName,
+          filePath: randomKey + ':' + res.data.filePath + ':' + mimeType,
           plainMessage: res.data.filePath,
           chatSessionId: currentRatchetId,
           index: resMsg.index,
@@ -158,6 +159,16 @@ const MessageForm = (props: MessageFormProps) => {
         JSON.stringify({
           type: FILE_TYPE,
           senderUsername: userInfo?.userName,
+          filePath:
+            randomKey +
+            ':' +
+            res.data.filePath +
+            ':' +
+            mimeType +
+            ':' +
+            fileName +
+            ':' +
+            fileSize / 1024,
           plainMessage: res.data.filePath,
           chatSessionId: currentRatchetId,
           index: resMsg.index,
