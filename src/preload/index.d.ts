@@ -42,7 +42,7 @@ declare global {
       changeConversationReaded(username: string, isReaded: boolean): Promise<void>
       getRatchetId(username: string): Promise<string>
       getRatchetDetailList(currentUsername: string): Promise<IRatchetDetail[]>
-      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string, updatedAt: string, isReaded: boolean}[]>
+      getOldChatSessions(currentUsername: string): Promise<{receiver:string, ratchetId: string, lastMessage: string, updatedAt: string, isReaded: boolean, messages: IMessage[]}[]>
       addMessageToRatchet(receiver: string, messages: IMessage[]): Promise<void>
       getMessagesByUsername(username: string): Promise<IMessage[]>
       deleteMessage(receiver: string, index: number): Promise<void>

@@ -30,8 +30,9 @@ const HomeScreen = () => {
     try {
       // init chat
       const oldChatSessions = await window.api.getOldChatSessions(userInfo!.userName)
+      console.log('oldChatSessions', oldChatSessions)
       const newConversations: IConversation[] = oldChatSessions
-        .filter((item) => item.lastMessage)
+        .filter((item) => item.messages.length > 0)
         .map<IConversation>((item) => ({
           lastMessage: item.lastMessage,
           receiver: item.receiver,
