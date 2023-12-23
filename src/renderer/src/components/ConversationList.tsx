@@ -10,7 +10,7 @@ import {
   CHAT_NEW_EVENT,
   FILE_TYPE,
   IMAGE_TYPE,
-  MESSAGE_EVENT,
+  TEXT_TYPE,
   VIDEO_TYPE
 } from '../configs/consts'
 import IConversation from '../interfaces/IConversation'
@@ -77,29 +77,29 @@ const ConversationList = () => {
           break
         }
 
-        case MESSAGE_EVENT:
+        case TEXT_TYPE:
         case IMAGE_TYPE:
         case VIDEO_TYPE:
         case FILE_TYPE: {
-          let content = ''
-          if (data.type === IMAGE_TYPE) content = 'Người dùng đã gửi ảnh'
-          else if (data.type === VIDEO_TYPE) content = 'Người dùng đã gửi video'
-          else
-            content = await window.receiveMessage(
-              JSON.stringify({
-                chatSessionId: data.chatSessionId,
-                index: data.index,
-                cipherMessage: data.cipherMessage,
-                isBinary: data.isBinary
-              })
-            )
+          let mediaContent = ''
+          if (data.type === IMAGE_TYPE) mediaContent = 'Người dùng đã gửi ảnh'
+          else if (data.type === VIDEO_TYPE) mediaContent = 'Người dùng đã gửi video'
+
+          const content = await window.receiveMessage(
+            JSON.stringify({
+              chatSessionId: data.chatSessionId,
+              index: data.index,
+              cipherMessage: data.cipherMessage,
+              isBinary: data.isBinary
+            })
+          )
 
           const newMessage: IMessage = {
             index: data.index,
-            content: content,
+            content: mediaContent == '' ? content : mediaContent,
             type: data.type,
             sender: data.senderUsername,
-            filePath: data.filePath,
+            filePath: content + ':' + data.filePath,
             isDeleted: false
           }
 
@@ -116,7 +116,6 @@ const ConversationList = () => {
           const newConversations = [...conversations]
           if (!newConversations[conversationIndex]) return
           newConversations[conversationIndex].lastMessage = content
-          console.log('content', content)
 
           const temp = newConversations[conversationIndex]
           temp.isReaded = temp.id === currentRatchetId

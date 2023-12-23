@@ -74,6 +74,7 @@ const MessageItem = (props: MessageItemProps) => {
   useEffect(() => {
     if (message.type !== TEXT_TYPE && message.filePath) {
       ;(async function () {
+        console.log(message)
         const [randomKey, filePath, , filename, fileSize] = message.filePath!.split(':')
         const res = await uploadRepository.downloadFile(filePath!)
         const responseBlob = await res.data
