@@ -88,7 +88,6 @@ const MessageItem = (props: MessageItemProps) => {
       })()
     }
   }, [message])
-  console.log('content', content)
 
   return (
     <div

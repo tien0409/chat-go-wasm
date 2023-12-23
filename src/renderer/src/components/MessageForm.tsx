@@ -92,7 +92,7 @@ const MessageForm = (props: MessageFormProps) => {
       const res = await uploadRepository.uploadFile(formData)
       const chatType = mimeType.split('/')[0] === 'image' ? IMAGE_TYPE : VIDEO_TYPE
 
-      const resMsg = await window.sendMessage(currentRatchetId!, true, randomKey)
+      const resMsg = await window.sendMessage(currentRatchetId!, false, randomKey)
       websocket?.send(
         JSON.stringify({
           type: chatType,
@@ -107,8 +107,7 @@ const MessageForm = (props: MessageFormProps) => {
       )
       const newMessage: IMessage = {
         index: resMsg.index,
-        content:
-          chatType === IMAGE_TYPE ? 'Người dùng đã gửi một ảnh' : 'Người dùng đã gửi một video',
+        content: chatType === IMAGE_TYPE ? 'Bạn đã gửi một ảnh' : 'Bạn đã gửi một video',
         filePath: randomKey + ':' + res.data.filePath + ':' + mimeType,
         type: chatType,
         sender: userInfo!.userName,
@@ -154,7 +153,7 @@ const MessageForm = (props: MessageFormProps) => {
       formData.set('upload', encryptedBlob)
       const res = await uploadRepository.uploadFile(formData)
 
-      const resMsg = await window.sendMessage(currentRatchetId!, true, randomKey)
+      const resMsg = await window.sendMessage(currentRatchetId!, false, randomKey)
       websocket?.send(
         JSON.stringify({
           type: FILE_TYPE,
@@ -202,7 +201,7 @@ const MessageForm = (props: MessageFormProps) => {
         (item) => item.receiver === currentConversation
       )
       const newConversations = [...conversations]
-      newConversations[conversationIndex].lastMessage = 'Người dùng đã gửi một tệp tin'
+      newConversations[conversationIndex].lastMessage = 'Bạn dùng đã gửi một tệp tin'
       const temp = newConversations[conversationIndex]
       newConversations.splice(conversationIndex, 1)
       newConversations.unshift(temp)
