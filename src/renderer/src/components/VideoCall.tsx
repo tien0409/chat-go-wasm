@@ -50,6 +50,7 @@ const VideoCall = () => {
     const mimeType = enableVideo ? VIDEO_MIME_TYPE : AUDIO_MIME_TYPE
     console.log('mimeType', mimeType)
     console.log('enableAudio', enableAudio)
+    console.log('enableVideo', enableVideo)
 
     // LOCAL setup
     All_mediaDevices.getUserMedia({
@@ -62,25 +63,23 @@ const VideoCall = () => {
             mimeType
           })
           localRecorder.ondataavailable = (event) => {
+            if (myWS.readyState === myWS.CLOSED || myWS.readyState === myWS.CLOSING) {
+              if (enableVideo)
+                vidStream.getVideoTracks()?.forEach((track) => {
+                  track.enabled = false
+                  track.stop()
+                })
+              if (enableAudio)
+                vidStream.getAudioTracks()?.forEach((track) => {
+                  track.enabled = false
+                  track.stop()
+                })
+              localRecorder = null
+              myWS.close()
+              return
+            }
+            if (myWS.readyState === myWS.CONNECTING) return
             encryptblobVoip(event.data, ENC_KEY).then((result) => {
-              if (myWS.readyState === myWS.CLOSED || myWS.readyState === myWS.CLOSING) {
-                if (enableVideo)
-                  vidStream.getVideoTracks()?.forEach((track) => {
-                    track.enabled = false
-                    track.stop()
-                  })
-                if (enableAudio)
-                  vidStream.getAudioTracks()?.forEach((track) => {
-                    track.enabled = false
-                    track.stop()
-                  })
-                localRecorder = null
-                myWS.close()
-                return
-              }
-              if (myWS.readyState === myWS.CONNECTING) return
-              // console.log('myWS', myWS)
-
               myWS.send(result)
             })
           }

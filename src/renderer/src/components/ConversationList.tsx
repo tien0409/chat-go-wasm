@@ -41,7 +41,8 @@ const ConversationList = () => {
     setInitCallType,
     setEnableAudio,
     setEnableVideo,
-    turnOffCall
+    turnOffCall,
+    typeCall
   } = useCallStore()
 
   // eslint-disable-next-line
@@ -134,8 +135,13 @@ const ConversationList = () => {
           console.log('voice call comming')
           setStatus('receiving-call')
           setTypeCall('audio')
-          setEnableAudio(true)
-          setEnableVideo(false)
+          if (typeCall == 'video') {
+            setEnableAudio(true)
+            setEnableVideo(true)
+          } else {
+            setEnableAudio(true)
+            setEnableVideo(false)
+          }
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
           const res = await userRepository.getExternalUserKey(data.senderUsername)
@@ -153,8 +159,13 @@ const ConversationList = () => {
           console.log('video call comming')
           setStatus('receiving-call')
           setTypeCall('video')
-          setEnableAudio(true)
-          setEnableVideo(true)
+          if (typeCall == 'video') {
+            setEnableAudio(true)
+            setEnableVideo(true)
+          } else {
+            setEnableAudio(true)
+            setEnableVideo(false)
+          }
           setCaller(data.senderUsername)
           setVoipToken(data.cipherMessage)
           const res = await userRepository.getExternalUserKey(data.senderUsername)
