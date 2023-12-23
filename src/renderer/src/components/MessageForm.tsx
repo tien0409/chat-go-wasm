@@ -102,7 +102,7 @@ const MessageForm = (props: MessageFormProps) => {
           chatSessionId: currentRatchetId,
           index: resMsg.index,
           cipherMessage: resMsg.cipherMessage,
-          isBinary: true
+          isBinary: false
         })
       )
       const newMessage: IMessage = {
@@ -172,7 +172,7 @@ const MessageForm = (props: MessageFormProps) => {
           chatSessionId: currentRatchetId,
           index: resMsg.index,
           cipherMessage: resMsg.cipherMessage,
-          isBinary: true
+          isBinary: false
         })
       )
       const newMessage: IMessage = {
