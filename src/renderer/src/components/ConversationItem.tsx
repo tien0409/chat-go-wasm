@@ -96,25 +96,25 @@ const ConversationItem = (props: ConversationItemProps) => {
           })
         )
 
+        newMessages.push({
+          content,
+          index: item.index,
+          sender: item.senderUsername,
+          type: item.type,
+          filePath: item.filePath,
+          isDeleted: item.isDeleted
+        })
         // save new ratchet detail
         const ratchetDetail = await window.saveRatchet(item.chatSessionId!)
         await window.api.changeRatchetDetail(item.senderUsername!, ratchetDetail)
-        await window.api.addMessageToRatchet(item.senderUsername!, [
-          {
-            content,
-            index: item.index,
-            sender: item.senderUsername,
-            type: item.type,
-            filePath: item.filePath,
-            isDeleted: item.isDeleted
-          }
-        ])
-        await window.api.changeConversationReaded(item.senderUsername!, true)
       }
 
-      /*isNewConversation &&
-        (await window.api.addMessageToRatchet(conversation.receiver, newMessages)))
-      await window.api.changeConversationReaded(conversation.receiver, true)*/
+      isNewConversation &&
+        (await window.api.addMessageToRatchet(conversation.receiver, newMessages))
+      await window.api.changeConversationReaded(conversation.receiver, true)
+
+      setCurrentIdxSearch(0)
+      setMessageSearches([])
 
       setCurrentIdxSearch(0)
       setMessageSearches([])
